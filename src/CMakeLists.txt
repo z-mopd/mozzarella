@@ -1,12 +1,22 @@
-add_executable(main
-   main.cpp
-   vertex.cpp
-   render.cpp
-   glad.c
+set(mzrlib_sources
+   external/glad.c
+   _vertex.cpp
+   _render.cpp
+   init.cpp
+   window.cpp
+   shape.cpp
+   color.cpp
 )
 
-target_link_libraries(main PRIVATE glfw)
-target_include_directories(main PRIVATE ${CMAKE_SOURCE_DIR}/include)
-find_package(OpenGL REQUIRED)
+include(GlfwImport)
 
-target_link_libraries(main PRIVATE OpenGL::GL)
+add_library(mzrlib
+   STATIC
+   ${mzrlib_sources}
+)
+
+target_link_libraries(mzrlib PRIVATE OpenGL::GL)
+target_include_directories(mzrlib 
+   PRIVATE  ${CMAKE_CURRENT_BINARY_DIR} ${mzrinclude}
+   PUBLIC   ${pubinclude}
+)
