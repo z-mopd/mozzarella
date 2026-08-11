@@ -12,15 +12,6 @@ void mzr::ProcessEvents();
 GLuint query_shader_program();
 GLFWwindow* first_context();
 
-//TODO: write up a renderer
-
-struct draw_call {
-   GLenum mode;
-   GLuint vao;
-   GLuint vbo;
-   std::size_t count;
-};
-
 void submit_geometry(GLenum draw_mode, GLfloat *buffer, size_t buffer_size, size_t count);
 
 void batch_geometry(GLenum draw_mode);
