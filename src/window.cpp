@@ -5,10 +5,6 @@
 #include "window.hpp"
 #include "input.hpp"
 #include "shape.hpp"
-#include <alloca.h>
-#include <array>
-#include <iostream>
-#include <vector>
 
 void noop(mzr::Window* window, MouseButton button, Action action) {}
 

@@ -8,12 +8,11 @@ static GLuint shader_program;
 
 static const std::size_t STACK_SIZE = 2<<12;
 
-static GLenum modes[STACK_SIZE] = {};
-
 static GLuint shared_vao;
 
+static GLenum modes[STACK_SIZE];
 static GLuint vbos[STACK_SIZE];
-static std::size_t counts[STACK_SIZE] = {};
+static std::size_t counts[STACK_SIZE];
 
 static std::size_t top_index = 0;
 

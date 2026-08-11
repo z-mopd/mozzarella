@@ -1,9 +1,5 @@
 #include "shape.hpp"
-#include "_common.hpp"
-#include "_vertex.hpp"
-
 #include <cmath>
-#include <iostream>
 
 namespace mzr {
 

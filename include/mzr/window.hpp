@@ -4,9 +4,7 @@
 #include "input.hpp"
 #include "shape.hpp"
 #include "color.hpp"
-#include <cstdint>
 #include <initializer_list>
-#include <unordered_map>
 
 namespace mzr {
 

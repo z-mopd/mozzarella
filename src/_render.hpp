@@ -3,7 +3,6 @@
 
 #include "_common.hpp"
 #include "events.hpp"
-#include "shape.hpp"
 #include <cstddef>
 
 bool r_init();
