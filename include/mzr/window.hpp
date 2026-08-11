@@ -9,7 +9,8 @@
 namespace mzr {
 
 class Window {
-   void* _underlying; // GLFWwindow. I wanted to hide any internals from the user, and because of that, the Window class fell into an odd predicament. It needed a reference to a GLFWwindow, but it also needed to hide any GLFW-related things away from the user, so I decided to make this a void ptr. Of course, I could make Window an opaque type or follow the PImpl idiom, but those options didn't feel right to me. (Opaque type requires heap allocation, which isn't too bad since GLFWwindow does the same. For PImpl, I just dislike it.)
+   void* _underlying;
+
    Action _prev_state;
 
    double _last_marked;
@@ -39,17 +40,14 @@ class Window {
       void BeginDrawing();
       void Clear(Color color);
 
+      void BatchDraw(std::initializer_list<Shape> shapes, Color color);
+
+      template <typename T>
+      void Draw(StaticDrawable<T> static_drawable);
+
       void Draw(Triangle triangle, Color color);
       void Draw(Rectangle rectangle, Color color);
       void Draw(Circle circle, Color color);
-
-      /*
-      template <std::size_t N>
-      void Draw(RegularDrawable<N>&& shape, Color color) {
-         shape._set_color(color);
-         shape._update_buffer(this->size);
-         glDrawArrays(GL_TRIANGLES, 0, shape._count);
-      }*/
 
       void EndDrawing();
 };

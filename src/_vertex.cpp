@@ -142,22 +142,42 @@ void gen_rectangle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos
    );
 }
 
-void set_vertices_to(GLfloat* vertex_buffer, size_t nbuffer, size_t vertex_span, size_t offset, float value) {
+void gen_circle_vert(GLfloat *vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat radius, GLfloat segments) {
+   vertex_buffer[0] = pos.x;
+   vertex_buffer[1] = pos.y;
+
+   vertex_buffer += vertex_span;
+
+   for (std::size_t i = 0; i <= segments; i += vertex_span) {
+      float angle = 2.0f * M_PI * i / segments;
+
+      float x = radius * cos(angle);
+      float y = radius * sin(angle);
+
+      vertex_buffer[i] = x;
+      vertex_buffer[i + 1] = y;
+   }
+}
+
+void set_vertices_to(GLfloat* vertex_buffer, size_t nbuffer, size_t n, size_t vertex_span, size_t offset, float value) {
+   BUFFER_ASSERT(nbuffer >= n);
    for (size_t i = 0; i < nbuffer; i += vertex_span) {
       vertex_buffer[i + offset] = value;
    }
 }
 
 void map_color_to_vertices(GLfloat* vertex_buffer, size_t nbuffer, mzr::Color color) {
+   BUFFER_ASSERT(nbuffer >= 4);
    vertex_buffer[0] = color.r;
    vertex_buffer[1] = color.g;
    vertex_buffer[2] = color.b;
    vertex_buffer[3] = color.a;
 }
 
-void map_color_ntimes(GLfloat *vertex_buffer, size_t n, mzr::Color color) {
+void map_color_ntimes(GLfloat *vertex_buffer, size_t nbuffer, size_t n, mzr::Color color, size_t offset) {
    for (size_t i = 0; i < n; ++i) {
-      map_color_to_vertices(vertex_buffer + (i*4), n, color);
+      vertex_buffer += 3;
+      map_color_to_vertices(vertex_buffer + (i*4), 4, color);
    }
 }
 

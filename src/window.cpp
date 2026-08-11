@@ -5,6 +5,7 @@
 #include "window.hpp"
 #include "input.hpp"
 #include "shape.hpp"
+#include <iostream>
 
 void noop(mzr::Window* window, MouseButton button, Action action) {}
 
@@ -32,7 +33,6 @@ Window::Window(int2 pos, int2 size, const char* title, std::initializer_list<int
 
    glfwMakeContextCurrent(underlying); // everything before this should not rely on the current context
    glViewport(pos.x, pos.y, size.x, size.y);
-
 }
 
 Window::Window(int2 pos, int2 size, const char* title) : Window(pos, size, title, {}) {}
@@ -89,6 +89,15 @@ void Window::Clear(Color color) {
    glClear(GL_COLOR_BUFFER_BIT);
 }
 
+template<>
+void Window::Draw<Triangle>(StaticDrawable<Triangle>) {}
+
+template<>
+void Window::Draw<Rectangle>(StaticDrawable<Rectangle>) {}
+
+template<>
+void Window::Draw<Circle>(StaticDrawable<Circle>) {}
+
 void Window::Draw(Triangle triangle, Color color) {
    GLfloat2 win_sizef = {static_cast<GLfloat>(this->size.x), static_cast<GLfloat>(this->size.y)};
 
@@ -97,13 +106,11 @@ void Window::Draw(Triangle triangle, Color color) {
    GLfloat2 adjusted_p3 = project_point_to_screen(f2_to_glf2(triangle.p3), win_sizef);
 
    alloc_shape_buffer(GLfloat, vertices, 3);
-   gen_triangle_direct(vertices, 3, adjusted_p1, adjusted_p2, adjusted_p3);
-   map_color_ntimes(vertices + 9, 3, color.normalized());
+   gen_triangle_direct(vertices, 7, adjusted_p1, adjusted_p2, adjusted_p3);
+   map_color_ntimes(vertices, buffer_nsize(3), 3, color.normalized(), 3);
 
-   glBindVertexArray(triangle.get_sid());
-   glBindBuffer(GL_ARRAY_BUFFER, triangle.get_bid());
-   glBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size(GLfloat, 3), vertices);
-   glDrawArrays(GL_TRIANGLES, 0, 3);
+   submit_geometry(GL_TRIANGLES, vertices, buffer_byte_size(GLfloat, 3), 3);
+   draw();
 }
 
 void Window::Draw(Rectangle rectangle, Color color) {
@@ -113,17 +120,19 @@ void Window::Draw(Rectangle rectangle, Color color) {
    GLfloat2 adjusted_size = {(rectangle.size.x*2)/win_sizef.x, (rectangle.size.y*2)/win_sizef.y};
 
    alloc_shape_buffer(GLfloat, vertices, 6);
-   gen_rectangle_vert(vertices, 3, adjusted_pos, adjusted_size);
-   map_color_ntimes(vertices + 18, 6, color.normalized());
+   gen_rectangle_vert(vertices, 7, adjusted_pos, adjusted_size);
+   map_color_ntimes(vertices, buffer_nsize(6), 6, color.normalized(), 3);
 
-   glBindVertexArray(rectangle.get_sid());
-   glBindBuffer(GL_ARRAY_BUFFER, rectangle.get_bid());
-   glBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size(GLfloat, 6), vertices);
-   glDrawArrays(GL_TRIANGLES, 0, 6);
+   submit_geometry(GL_TRIANGLES, vertices, buffer_byte_size(GLfloat, 6), 6);
+   draw();
 }
 
 void Window::Draw(Circle circle, Color color) {
-   //TODO: implement this
+   GLfloat2 win_sizef = {static_cast<GLfloat>(this->size.x), static_cast<GLfloat>(this->size.y)};
+
+   //TODO: work this out
+   GLfloat2 adjusted_pos = project_point_to_screen(f2_to_glf2(circle.pos), win_sizef);
+   GLfloat adjusted_size = circle.radius;
 }
 
 void Window::EndDrawing() {

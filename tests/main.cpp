@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <mzr/color.hpp>
 #include <mzr/input.hpp>
 #include <mzr/shape.hpp>
@@ -26,6 +27,7 @@ int main() {
    });
 
    while (!myWindow.ShouldClose()) {
+      std::cout << myWindow.GetFrameTime() << '\n';
       if (myTriangle.CheckCollisionPoint(myWindow.GetMousePos()) && myWindow.IsMousePressed(MouseButton::LEFT)) {
          std::cout << "triangle clicked\n";
       }

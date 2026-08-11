@@ -1,42 +1,29 @@
 #ifndef SHAPE_HPP
 #define SHAPE_HPP
 
+#include "color.hpp"
 #include "data_types.hpp"
 #include <cstdint>
+#include <utility>
 
 #define CIRCLE_DEFAULT_SEGMENTS 100
 
 namespace mzr {
 
 class Shape {
-   protected:
-      std::uint32_t _vbo;
-      std::uint32_t _vao;
-
    public:
       virtual bool CheckCollisionPoint(float2 point) = 0;
-
-      std::uint32_t get_bid() const;
-      std::uint32_t get_sid() const;
 };
 
-/*
-template <std::size_t N>
-class RegularDrawable {
-   protected:
-      std::array<float, N + 4> _vertices;
-      std::size_t _count;
-      unsigned int _vbo;
-      unsigned int _vao;
-
-      virtual void _update_buffer(int2 win_size) = 0;
-      virtual void _set_color(Color color) = 0;
-
-   friend class Window;
-};*/
-
 template <typename Shape_T>
-class StaticDrawable {};
+class StaticDrawable {
+   Shape_T _shape;
+   Color color;
+
+   public:
+      template <typename... Args>
+      StaticDrawable(Color color, Args&&... args) : color(color), _shape(std::forward<Args>(args)...) {}
+};
 
 class Triangle : public Shape {
    public:
@@ -51,16 +38,19 @@ class Rectangle : public Shape {
       float2 pos, size;
 
       Rectangle(float2 pos, float2 size);
+      Rectangle(float x, float y, float width, float height);
 
       bool CheckCollisionPoint(float2 point) override;
 };
 
 class Circle : public Shape {
    public:
+      const std::size_t SEGMENTS;
       float2 pos;
       float radius;
 
       Circle(float2 pos, float radius);
+      Circle(float2 pos, float radius, std::size_t segments);
 
       bool CheckCollisionPoint(float2 point) override;
 };

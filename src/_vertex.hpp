@@ -5,8 +5,9 @@
 #include "color.hpp"
 #include <cstddef>
 
-#define alloc_shape_buffer(type, buffer_name, points) type buffer_name[(points)*3 + (points)*4] = {}
-#define buffer_size(type, points) ( ((points)*3 + (points)*4) * sizeof(type) )
+#define buffer_nsize(points) ((points)*3 + (points)*4)
+#define buffer_byte_size(type, points) ( buffer_nsize(points) * sizeof(type) )
+#define alloc_shape_buffer(type, buffer_name, points) type buffer_name[buffer_nsize(points)] = {}
 
 void points_to_vertices(GLfloat2* point_buffer, size_t npoints, GLfloat* vertex_buffer, size_t vertex_span);
 void vertices_to_points(GLfloat* vertex_buffer, size_t nbuffer, size_t vertex_span, GLfloat2* point_buffer);
@@ -21,10 +22,12 @@ void gen_rhtriangle_degrees(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2
 void gen_eqtriangle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat side_length);
 void gen_rectangle_vert(GLfloat* vertices, size_t vertex_span, GLfloat2 pos, GLfloat2 size);
 
+void gen_circle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat radius);
+
 void set_vertices_to(GLfloat* vertex_buffer, size_t nbuffer, size_t vertex_span, size_t offset, float value);
 
 void map_color_to_vertices(GLfloat* vertex_buffer, size_t nbuffer, mzr::Color color);
-void map_color_ntimes(GLfloat* vertex_buffer, size_t n, mzr::Color color);
+void map_color_ntimes(GLfloat* vertex_buffer, size_t nbuffer, size_t n, mzr::Color color, size_t offset);
 
 GLfloat2 project_point_to_screen(GLfloat2 p1, GLfloat2 screen_size);
 GLfloat2 project_size_to_screen(GLfloat2 size, GLfloat2 screen_size);
