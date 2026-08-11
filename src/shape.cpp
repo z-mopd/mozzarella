@@ -3,6 +3,7 @@
 #include "_vertex.hpp"
 
 #include <cmath>
+#include <iostream>
 
 namespace mzr {
 
@@ -26,7 +27,7 @@ Triangle::Triangle(float2 p1, float2 p2, float2 p3) : p1(p1), p2(p2), p3(p3) {
    glBindVertexArray(0);*/
 }
 
-bool Triangle::CheckCollisionPoint(float2 point) {
+bool Triangle::CheckCollisionPoint(float2 point) const {
     double areaOrig = fabs((this->p2.x - this->p1.x) * (this->p3.y - this->p1.y) - (this->p3.x - this->p1.x) * (this->p2.y - this->p1.y));
     double area1 = fabs((this->p1.x - point.x) * (this->p2.y - point.y) - (this->p2.x - point.x) * (this->p1.y - point.y));
     double area2 = fabs((this->p2.x - point.x) * (this->p3.y - point.y) - (this->p3.x - point.x) * (this->p2.y - point.y));
@@ -56,7 +57,7 @@ Rectangle::Rectangle(float2 pos, float2 size) : pos(pos), size(size) {
 
 Rectangle::Rectangle(float x, float y, float width, float height) : pos{x, y}, size{width, height} {}
 
-bool Rectangle::CheckCollisionPoint(float2 point) {
+bool Rectangle::CheckCollisionPoint(float2 point) const {
    float min_x = this->pos.x;
    float min_y = this->pos.y;
 
@@ -70,7 +71,7 @@ Circle::Circle(float2 pos, float radius) : pos(pos), radius(radius), SEGMENTS(CI
 
 Circle::Circle(float2 pos, float radius, std::size_t segments) : pos(pos), radius(radius), SEGMENTS(segments) {}
 
-bool Circle::CheckCollisionPoint(float2 point) {
+bool Circle::CheckCollisionPoint(float2 point) const {
    float dx = point.x - this->pos.x;
    float dy = point.y - this->pos.y;
    float distance_sq = dx * dx + dy * dy;

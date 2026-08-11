@@ -27,7 +27,7 @@ int main() {
    });
 
    while (!myWindow.ShouldClose()) {
-      std::cout << myWindow.GetFrameTime() << '\n';
+      printf("%f\n", myWindow.GetFrameTime());
       if (myTriangle.CheckCollisionPoint(myWindow.GetMousePos()) && myWindow.IsMousePressed(MouseButton::LEFT)) {
          std::cout << "triangle clicked\n";
       }
@@ -39,8 +39,8 @@ int main() {
       myWindow.BeginDrawing();
       myWindow.Clear(mzr::Color::BLACK);
 
-      myWindow.Draw(myRec, mzr::Color::RED);
       myWindow.Draw(myTriangle, mzr::Color::RED);
+      myWindow.Draw(myRec, mzr::Color::RED);
 
       mzr::ProcessEvents();
       myWindow.EndDrawing();

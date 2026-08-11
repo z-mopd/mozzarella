@@ -5,7 +5,10 @@
 #include "window.hpp"
 #include "input.hpp"
 #include "shape.hpp"
+#include <alloca.h>
+#include <array>
 #include <iostream>
+#include <vector>
 
 void noop(mzr::Window* window, MouseButton button, Action action) {}
 
@@ -89,12 +92,12 @@ void Window::Clear(Color color) {
    glClear(GL_COLOR_BUFFER_BIT);
 }
 
-template<>
-void Window::Draw<Triangle>(StaticDrawable<Triangle>) {}
+void Window::BatchDraw(std::initializer_list<Shape> shapes, Color color) {}
 
 template<>
-void Window::Draw<Rectangle>(StaticDrawable<Rectangle>) {}
-
+void Window::Draw<Triangle>(StaticDrawable<Triangle> triangle) {}
+template<>
+void Window::Draw<Rectangle>(StaticDrawable<Rectangle> rectangle) {}
 template<>
 void Window::Draw<Circle>(StaticDrawable<Circle>) {}
 
@@ -125,6 +128,10 @@ void Window::Draw(Rectangle rectangle, Color color) {
 
    submit_geometry(GL_TRIANGLES, vertices, buffer_byte_size(GLfloat, 6), 6);
    draw();
+}
+
+void Window::FlushRender() {
+   flush();
 }
 
 void Window::Draw(Circle circle, Color color) {

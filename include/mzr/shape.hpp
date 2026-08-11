@@ -3,7 +3,6 @@
 
 #include "color.hpp"
 #include "data_types.hpp"
-#include <cstdint>
 #include <utility>
 
 #define CIRCLE_DEFAULT_SEGMENTS 100
@@ -12,17 +11,18 @@ namespace mzr {
 
 class Shape {
    public:
-      virtual bool CheckCollisionPoint(float2 point) = 0;
+      virtual bool CheckCollisionPoint(float2 point) const = 0;
 };
 
+// TODO: implement static drawing
 template <typename Shape_T>
 class StaticDrawable {
    Shape_T _shape;
-   Color color;
+   Color _color;
 
    public:
       template <typename... Args>
-      StaticDrawable(Color color, Args&&... args) : color(color), _shape(std::forward<Args>(args)...) {}
+      StaticDrawable(Color color, Args&&... args) : _color(color), _shape(std::forward<Args>(args)...) {}
 };
 
 class Triangle : public Shape {
@@ -30,7 +30,7 @@ class Triangle : public Shape {
       float2 p1, p2, p3;
       Triangle(float2 p1, float2 p2, float2 p3);
 
-      bool CheckCollisionPoint(float2 point) override;
+      bool CheckCollisionPoint(float2 point) const override;
 };
 
 class Rectangle : public Shape {
@@ -40,7 +40,7 @@ class Rectangle : public Shape {
       Rectangle(float2 pos, float2 size);
       Rectangle(float x, float y, float width, float height);
 
-      bool CheckCollisionPoint(float2 point) override;
+      bool CheckCollisionPoint(float2 point) const override;
 };
 
 class Circle : public Shape {
@@ -52,7 +52,7 @@ class Circle : public Shape {
       Circle(float2 pos, float radius);
       Circle(float2 pos, float radius, std::size_t segments);
 
-      bool CheckCollisionPoint(float2 point) override;
+      bool CheckCollisionPoint(float2 point) const override;
 };
 
 }

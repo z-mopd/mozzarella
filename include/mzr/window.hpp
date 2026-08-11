@@ -4,7 +4,9 @@
 #include "input.hpp"
 #include "shape.hpp"
 #include "color.hpp"
+#include <cstdint>
 #include <initializer_list>
+#include <unordered_map>
 
 namespace mzr {
 
@@ -48,6 +50,8 @@ class Window {
       void Draw(Triangle triangle, Color color);
       void Draw(Rectangle rectangle, Color color);
       void Draw(Circle circle, Color color);
+
+      void FlushRender();
 
       void EndDrawing();
 };

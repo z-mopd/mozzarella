@@ -1,7 +1,6 @@
 #include "_render.hpp"
 #include "_common.hpp"
 
-#include <cstddef>
 #include <iostream>
 
 static GLFWwindow* _first_context = nullptr;
@@ -9,10 +8,12 @@ static GLuint shader_program;
 
 static const std::size_t STACK_SIZE = 2<<12;
 
-static GLenum modes[STACK_SIZE];
-static GLuint vaos[STACK_SIZE];
+static GLenum modes[STACK_SIZE] = {};
+
+static GLuint shared_vao;
+
 static GLuint vbos[STACK_SIZE];
-static GLuint counts[STACK_SIZE];
+static std::size_t counts[STACK_SIZE] = {};
 
 static std::size_t top_index = 0;
 
@@ -70,7 +71,7 @@ bool r_init() {
    glDeleteShader(vertexShader);
    glDeleteShader(fragmentShader);
 
-   glGenVertexArrays(STACK_SIZE, vaos);
+   glGenVertexArrays(1, &shared_vao);
    glGenBuffers(STACK_SIZE, vbos);
 
    return true;
@@ -88,25 +89,14 @@ GLFWwindow* first_context() {
    return _first_context;
 }
 
-void submit_geometry(GLenum draw_mode, GLfloat *buffer, size_t buffer_size, size_t count) {
+void submit_geometry(GLenum draw_mode, GLfloat *buffer, std::size_t buffer_size, std::size_t count) {
    modes[top_index] = draw_mode;
    counts[top_index] = count;
 
-   GLuint vao = vaos[top_index];
    GLuint vbo = vbos[top_index];
-
-   glBindVertexArray(vao);
 
    glBindBuffer(GL_ARRAY_BUFFER, vbo);
    glBufferData(GL_ARRAY_BUFFER, buffer_size, buffer, GL_STREAM_DRAW);
-
-   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)0);
-   glEnableVertexAttribArray(0);
-   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-   glEnableVertexAttribArray(1);
-
-   glBindBuffer(GL_ARRAY_BUFFER, 0);
-   glBindVertexArray(0);
 
    ++top_index;
 }
@@ -118,17 +108,20 @@ void draw() {
    if (top_index == 0) return;
    --top_index;
 
-   glBindVertexArray(vaos[top_index]);
+   glBindVertexArray(shared_vao);
    glBindBuffer(GL_ARRAY_BUFFER, vbos[top_index]);
+
+   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)0);
+   glEnableVertexAttribArray(0);
+   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+   glEnableVertexAttribArray(1);
+
    glDrawArrays(modes[top_index], 0, counts[top_index]);
 }
 
 void flush() {
    while (top_index > 0) {
-      --top_index;
-      glBindVertexArray(vaos[top_index]);
-      glBindBuffer(GL_ARRAY_BUFFER, vbos[top_index]);
-      glDrawArrays(modes[top_index], 0, counts[top_index]);
+      draw();
    }
 }
 

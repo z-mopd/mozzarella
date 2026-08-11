@@ -3,6 +3,8 @@
 
 namespace mzr {
 
+// TODO: add window-level event processing rather than global event processing
+
 void ProcessEvents();
 
 }

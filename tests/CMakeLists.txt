@@ -1,8 +1,12 @@
+function(link_include target)
+   target_link_libraries(${target} PRIVATE mzrlib)
+   target_include_directories(${target} PRIVATE ${pubinclude})
+endfunction()
+
 if (BUILD_TESTS)
    add_executable(main
       main.cpp
    )
 
-   target_link_libraries(main PRIVATE mzrlib)
-   target_include_directories(main PRIVATE ${pubinclude})
+   link_include(main)
 endif()

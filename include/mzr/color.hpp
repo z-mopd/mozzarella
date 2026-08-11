@@ -1,9 +1,6 @@
 #ifndef COLOR_HPP
 #define COLOR_HPP
 
-#include "../mzr.hpp"
-#include <cstdint>
-
 namespace mzr {
 
 class Color {
