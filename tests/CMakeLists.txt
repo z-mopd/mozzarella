@@ -8,5 +8,10 @@ if (BUILD_TESTS)
       main.cpp
    )
 
+   add_executable(multi_window
+      multi_window.cpp
+   )
+
    link_include(main)
+   link_include(multi_window)
 endif()
