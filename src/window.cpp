@@ -35,6 +35,8 @@ Window::Window(int2 pos, int2 size, const char* title, std::initializer_list<int
 }
 
 Window::Window(int2 pos, int2 size, const char* title) : Window(pos, size, title, {}) {}
+Window::Window(int x, int y, int width, int height, const char* title, std::initializer_list<int> hints) : Window({x, y}, {width, height}, title, hints) {}
+Window::Window(int x, int y, int width, int height, const char* title) : Window({x, y}, {width, height}, title, {}) {}
 
 void Window::Close() {
    glfwDestroyWindow(static_cast<GLFWwindow*>(this->_underlying));
