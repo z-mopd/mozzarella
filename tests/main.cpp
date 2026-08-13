@@ -6,7 +6,6 @@
 #include <mzr/events.hpp>
 #include <mzr/init.hpp>
 
-#include <cmath>
 #include <iostream>
 
 int main() {
