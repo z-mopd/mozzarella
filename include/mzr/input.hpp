@@ -1,6 +1,8 @@
 #ifndef INPUT_HPP
 #define INPUT_HPP
 
+namespace mzr {
+
 enum MouseButton {
    LEFT,
    RIGHT,
@@ -13,5 +15,7 @@ enum Action {
    PRESS,
    REPEAT
 };
+
+}
 
 #endif

@@ -1,7 +1,7 @@
 #include <mzr.hpp>
 
 int main() {
-   mzr::libinit();
+   mzr::Init();
 
    mzr::Window window1 = { {0, 0}, {800, 800}, "first" };
    mzr::Window window2 = { {0, 0}, {800, 800}, "second" };
@@ -26,6 +26,6 @@ int main() {
    window1.Close();
    window2.Close();
 
-   mzr::libclose();
+   mzr::Close();
    return 0;
 }

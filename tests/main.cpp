@@ -9,7 +9,7 @@
 #include <iostream>
 
 int main() {
-   mzr::libinit();
+   mzr::Init();
 
    int winWidth = 800;
    int winHeight = 800;
@@ -19,19 +19,19 @@ int main() {
    mzr::Triangle myTriangle = {{0, 0}, {400, 0}, {200, 200}};
    mzr::Rectangle myRec = {{200, 300}, {400, 200}};
 
-   myWindow.MouseCallback([](mzr::Window* window, MouseButton button, Action action) {
-      if (button == MouseButton::LEFT && action == Action::PRESS) {
+   myWindow.MouseCallback([](mzr::Window* window, mzr::MouseButton button, mzr::Action action) {
+      if (button == mzr::MouseButton::LEFT && action == mzr::Action::PRESS) {
          std::cout << "left click\n";
       }
    });
 
    while (!myWindow.ShouldClose()) {
       printf("%f\n", myWindow.GetFrameTime());
-      if (myTriangle.CheckCollisionPoint(myWindow.GetMousePos()) && myWindow.IsMousePressed(MouseButton::LEFT)) {
+      if (myTriangle.CheckCollisionPoint(myWindow.GetMousePos()) && myWindow.IsMousePressed(mzr::MouseButton::LEFT)) {
          std::cout << "triangle clicked\n";
       }
 
-      if (myRec.CheckCollisionPoint(myWindow.GetMousePos()) && myWindow.IsMousePressed(MouseButton::LEFT)) {
+      if (myRec.CheckCollisionPoint(myWindow.GetMousePos()) && myWindow.IsMousePressed(mzr::MouseButton::LEFT)) {
          std::cout << "clicked!\n";
       }
 
@@ -47,7 +47,7 @@ int main() {
 
    myWindow.Close();
 
-   mzr::libclose();
+   mzr::Close();
 
    return 0;
 }

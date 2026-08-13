@@ -3,9 +3,9 @@
 
 namespace mzr {
 
-bool libinit();
+bool Init();
 
-void libclose();
+void Close();
 
 }
 
