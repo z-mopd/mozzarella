@@ -17,13 +17,21 @@ class Shape {
 // TODO: implement static drawing
 template <typename Shape_T>
 class StaticDrawable {
+   static std::size_t NEXT_ID;
+
    Shape_T _shape;
    Color _color;
 
+   const std::size_t _id;
+
    public:
       template <typename... Args>
-      StaticDrawable(Color color, Args&&... args) : _color(color), _shape(std::forward<Args>(args)...) {}
+      StaticDrawable(Color color, Args&&... args) : _id(++NEXT_ID), _color(color), _shape(std::forward<Args>(args)...) {}
+
+   friend class Window;
 };
+template <typename Shape_T>
+std::size_t StaticDrawable<Shape_T>::NEXT_ID = 0;
 
 class Triangle : public Shape {
    public:

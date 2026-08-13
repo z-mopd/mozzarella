@@ -11,11 +11,12 @@ void mzr::ProcessEvents();
 GLuint query_shader_program();
 GLFWwindow* first_context();
 
-void submit_geometry(GLenum draw_mode, GLfloat *buffer, size_t buffer_size, size_t count);
+void update_vertex_attrib();
 
-void batch_geometry(GLenum draw_mode);
+void submit_immediate_call(GLenum draw_mode, GLfloat *buffer, size_t buffer_size, size_t count);
 
 void draw(); // execute top of stack
+void draw_static(GLenum draw_mode, GLuint vbo, std::size_t count);
 
 void flush(); // execute everything on stack
 

@@ -1,10 +1,10 @@
 #include "init.hpp"
 #include "_render.hpp"
 
-bool mzr::libinit() {
+bool mzr::Init() {
    return r_init();
 }
 
-void mzr::libclose() {
+void mzr::Close() {
    r_close();
 }

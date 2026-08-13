@@ -5,10 +5,17 @@
 #include "shape.hpp"
 #include "color.hpp"
 #include <initializer_list>
+#include <unordered_map>
 
 namespace mzr {
 
+enum class WindowHints {
+   Visible,
+   Resizable
+};
+
 class Window {
+   std::unordered_map<std::size_t, std::size_t> _static_vbos;
    void* _underlying;
 
    Action _prev_state;

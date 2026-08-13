@@ -5,8 +5,9 @@
 #include "window.hpp"
 #include "input.hpp"
 #include "shape.hpp"
+#include <vector>
 
-void noop(mzr::Window* window, MouseButton button, Action action) {}
+void noop(mzr::Window* window, mzr::MouseButton button, mzr::Action action) {}
 
 namespace mzr {
 
@@ -92,12 +93,62 @@ void Window::Clear(Color color) {
 
 void Window::BatchDraw(std::initializer_list<Shape> shapes, Color color) {}
 
+
+// Static draw functions
+
 template<>
-void Window::Draw<Triangle>(StaticDrawable<Triangle> triangle) {}
+void Window::Draw<Triangle>(StaticDrawable<Triangle> triangle) {
+   if (_static_vbos.find(triangle._id) != _static_vbos.end()) {
+      draw_static(GL_TRIANGLES, _static_vbos[triangle._id], 3);
+   }
+   else {
+      GLfloat2 win_sizef = {static_cast<GLfloat>(this->size.x), static_cast<GLfloat>(this->size.y)};
+
+      GLfloat2 adjusted_p1 = project_point_to_screen(f2_to_glf2(triangle._shape.p1), win_sizef);
+      GLfloat2 adjusted_p2 = project_point_to_screen(f2_to_glf2(triangle._shape.p2), win_sizef);
+      GLfloat2 adjusted_p3 = project_point_to_screen(f2_to_glf2(triangle._shape.p3), win_sizef);
+      alloc_shape_buffer(GLfloat, vertices, 3);
+      gen_triangle_direct(vertices, 7, adjusted_p1, adjusted_p2, adjusted_p3);
+      map_color_ntimes(vertices, buffer_nsize(3), 3, triangle._color.normalized(), 3);
+
+      GLuint vbo;
+      glGenBuffers(1, &vbo);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      glBufferData(GL_ARRAY_BUFFER, buffer_byte_size(GLfloat, 3), vertices, GL_STATIC_DRAW);
+
+      _static_vbos[triangle._id] = vbo;
+      draw_static(GL_TRIANGLES, vbo, 3);
+   }
+}
 template<>
-void Window::Draw<Rectangle>(StaticDrawable<Rectangle> rectangle) {}
+void Window::Draw<Rectangle>(StaticDrawable<Rectangle> rectangle) {
+   if (_static_vbos.find(rectangle._id) != _static_vbos.end()) {
+      draw_static(GL_TRIANGLES, _static_vbos[rectangle._id], 6);
+   }
+   else {
+      GLfloat2 win_sizef = {static_cast<GLfloat>(this->size.x), static_cast<GLfloat>(this->size.y)};
+
+      GLfloat2 adjusted_pos = project_point_to_screen(f2_to_glf2(rectangle._shape.pos), win_sizef);
+      GLfloat2 adjusted_size = {(rectangle._shape.size.x*2)/win_sizef.x, (rectangle._shape.size.y*2)/win_sizef.y};
+
+      alloc_shape_buffer(GLfloat, vertices, 6);
+      gen_rectangle_vert(vertices, 7, adjusted_pos, adjusted_size);
+      map_color_ntimes(vertices, buffer_nsize(6), 6, rectangle._color.normalized(), 3);
+
+      GLuint vbo;
+      glGenBuffers(1, &vbo);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      glBufferData(GL_ARRAY_BUFFER, buffer_byte_size(GLfloat, 6), vertices, GL_STATIC_DRAW);
+
+      _static_vbos[rectangle._id] = vbo;
+      draw_static(GL_TRIANGLES, vbo, 6);
+   }
+}
 template<>
 void Window::Draw<Circle>(StaticDrawable<Circle>) {}
+
+
+// Regular draw functions
 
 void Window::Draw(Triangle triangle, Color color) {
    GLfloat2 win_sizef = {static_cast<GLfloat>(this->size.x), static_cast<GLfloat>(this->size.y)};
@@ -110,7 +161,8 @@ void Window::Draw(Triangle triangle, Color color) {
    gen_triangle_direct(vertices, 7, adjusted_p1, adjusted_p2, adjusted_p3);
    map_color_ntimes(vertices, buffer_nsize(3), 3, color.normalized(), 3);
 
-   submit_geometry(GL_TRIANGLES, vertices, buffer_byte_size(GLfloat, 3), 3);
+   submit_immediate_call(GL_TRIANGLES, vertices, buffer_byte_size(GLfloat, 3), 3);
+   update_vertex_attrib();
    draw();
 }
 
@@ -124,7 +176,8 @@ void Window::Draw(Rectangle rectangle, Color color) {
    gen_rectangle_vert(vertices, 7, adjusted_pos, adjusted_size);
    map_color_ntimes(vertices, buffer_nsize(6), 6, color.normalized(), 3);
 
-   submit_geometry(GL_TRIANGLES, vertices, buffer_byte_size(GLfloat, 6), 6);
+   submit_immediate_call(GL_TRIANGLES, vertices, buffer_byte_size(GLfloat, 6), 6);
+   update_vertex_attrib();
    draw();
 }
 
