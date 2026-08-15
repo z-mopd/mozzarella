@@ -26,7 +26,7 @@ double to_degrees(double radians) {
    return (180/M_PI)*radians;
 }
 
-GLfloat2 rotate_point(GLfloat2 origin, GLfloat2 point, float degrees) {
+float2 rotate_point(float2 origin, float2 point, float degrees) {
    float px = point.x - origin.x;
    float py = point.y - origin.y;
    double radians = to_radians(degrees);
@@ -37,13 +37,13 @@ GLfloat2 rotate_point(GLfloat2 origin, GLfloat2 point, float degrees) {
    double x_rotated = px * cos_r - py * sin_r;
    double y_rotated = px * sin_r + py * cos_r;
 
-   return (GLfloat2){
+   return (float2){
       float(x_rotated + origin.x),
       float(y_rotated + origin.y)
    };
 }
 
-void points_to_vertices(GLfloat2* point_buffer, size_t npoints, GLfloat* vertex_buffer, size_t vertex_span) {
+void points_to_vertices(float2* point_buffer, size_t npoints, float* vertex_buffer, size_t vertex_span) {
    SPAN_ASSERT(vertex_span >= 2); // if you reach this... what are you doing exactly?
 
    size_t vert_inoffset = 0;
@@ -55,18 +55,18 @@ void points_to_vertices(GLfloat2* point_buffer, size_t npoints, GLfloat* vertex_
    }
 }
 
-void vertices_to_points(GLfloat* vertex_buffer, size_t nbuffer, size_t vertex_span, GLfloat2* point_buffer) {
+void vertices_to_points(float* vertex_buffer, size_t nbuffer, size_t vertex_span, float2* point_buffer) {
    SPAN_ASSERT(vertex_span >= 2);
    BUFFER_ASSERT(nbuffer % vertex_span == 0);
 
    size_t point_inoffset = 0;
    for (size_t i = 0; i < nbuffer; i += vertex_span) {
-      point_buffer[point_inoffset] = (GLfloat2){vertex_buffer[i], vertex_buffer[i + 1]};
+      point_buffer[point_inoffset] = (float2){vertex_buffer[i], vertex_buffer[i + 1]};
       ++point_inoffset;
    }
 }
 
-void gen_triangle_direct(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos1, GLfloat2 pos2, GLfloat2 pos3) {
+void gen_triangle_direct(float* vertex_buffer, size_t vertex_span, float2 pos1, float2 pos2, float2 pos3) {
    SPAN_ASSERT(vertex_span >= 2);
 
    *(vertex_buffer) = pos1.x;
@@ -81,7 +81,7 @@ void gen_triangle_direct(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 po
    *(vertex_buffer + 1) = pos3.y;
 }
 
-void gen_triangle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat2 offset1, GLfloat2 offset2) {
+void gen_triangle_vert(float* vertex_buffer, size_t vertex_span, float2 pos, float2 offset1, float2 offset2) {
    SPAN_ASSERT(vertex_span >= 2);
 
    *(vertex_buffer) = pos.x;
@@ -96,53 +96,53 @@ void gen_triangle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos,
    *(vertex_buffer + 1) = pos.y + offset2.y;
 }
 
-void gen_triangle_degrees(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat2 offset1, GLfloat2 offset2, float degrees) {
+void gen_triangle_degrees(float* vertex_buffer, size_t vertex_span, float2 pos, float2 offset1, float2 offset2, float degrees) {
    gen_triangle_direct(vertex_buffer, vertex_span, pos,
       rotate_point(pos, offset1, degrees),
       rotate_point(pos, offset2, degrees)
    );
 }
 
-void gen_rhtriangle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat2 offset) {
+void gen_rhtriangle_vert(float* vertex_buffer, size_t vertex_span, float2 pos, float2 offset) {
    gen_triangle_vert(vertex_buffer, vertex_span, pos,
-      (GLfloat2){0, offset.y},
-      (GLfloat2){offset.x, 0}
+      (float2){0, offset.y},
+      (float2){offset.x, 0}
    );
 }
 
-void gen_rhtriangle_degrees(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat2 offset, float degrees) {
+void gen_rhtriangle_degrees(float* vertex_buffer, size_t vertex_span, float2 pos, float2 offset, float degrees) {
    gen_triangle_direct(vertex_buffer, vertex_span, pos,
-      rotate_point(pos, (GLfloat2){pos.x, pos.y + offset.y}, degrees),
-      rotate_point(pos, (GLfloat2){pos.x + offset.x, pos.y}, degrees)
+      rotate_point(pos, (float2){pos.x, pos.y + offset.y}, degrees),
+      rotate_point(pos, (float2){pos.x + offset.x, pos.y}, degrees)
    );
 }
 
-void gen_eqtriangle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat side_length) {
+void gen_eqtriangle_vert(float* vertex_buffer, size_t vertex_span, float2 pos, float side_length) {
    float height = side_length * sqrt(3) / 2;
    gen_triangle_vert(
       vertex_buffer, vertex_span, pos,
-      (GLfloat2){-(side_length / 2), -height},
-      (GLfloat2){side_length / 2, -height}
+      (float2){-(side_length / 2), -height},
+      (float2){side_length / 2, -height}
    );
 }
 
-void gen_rectangle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat2 size) {
+void gen_rectangle_vert(float* vertex_buffer, size_t vertex_span, float2 pos, float2 size) {
    // Shouldn't be possible unless something upstream messed up...
    // But really, an exception here would be annoying to handle
    assert(((void)"Size cannot be negative", size.x >= 0 && size.y >= 0));
 
    // triangle 1
-   gen_rhtriangle_vert(vertex_buffer, vertex_span, pos, (GLfloat2){size.x, -size.y});
+   gen_rhtriangle_vert(vertex_buffer, vertex_span, pos, (float2){size.x, -size.y});
 
    // triangle 2
    gen_rhtriangle_vert(
       vertex_buffer + vertex_span * 3, vertex_span,
-      (GLfloat2){pos.x + size.x, pos.y - size.y},
-      (GLfloat2){-size.x, size.y}
+      (float2){pos.x + size.x, pos.y - size.y},
+      (float2){-size.x, size.y}
    );
 }
 
-void gen_circle_vert(GLfloat *vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat radius, GLfloat segments) {
+void gen_circle_vert(float *vertex_buffer, size_t vertex_span, float2 pos, float radius, float segments) {
    vertex_buffer[0] = pos.x;
    vertex_buffer[1] = pos.y;
 
@@ -159,14 +159,14 @@ void gen_circle_vert(GLfloat *vertex_buffer, size_t vertex_span, GLfloat2 pos, G
    }
 }
 
-void set_vertices_to(GLfloat* vertex_buffer, size_t nbuffer, size_t n, size_t vertex_span, size_t offset, float value) {
+void set_vertices_to(float* vertex_buffer, size_t nbuffer, size_t n, size_t vertex_span, size_t offset, float value) {
    BUFFER_ASSERT(nbuffer >= n);
    for (size_t i = 0; i < nbuffer; i += vertex_span) {
       vertex_buffer[i + offset] = value;
    }
 }
 
-void map_color_to_vertices(GLfloat* vertex_buffer, size_t nbuffer, mzr::Color color) {
+void map_color_to_vertices(float* vertex_buffer, size_t nbuffer, mzr::Color color) {
    BUFFER_ASSERT(nbuffer >= 4);
    vertex_buffer[0] = color.r;
    vertex_buffer[1] = color.g;
@@ -174,17 +174,17 @@ void map_color_to_vertices(GLfloat* vertex_buffer, size_t nbuffer, mzr::Color co
    vertex_buffer[3] = color.a;
 }
 
-void map_color_ntimes(GLfloat *vertex_buffer, size_t nbuffer, size_t n, mzr::Color color, size_t offset) {
+void map_color_ntimes(float *vertex_buffer, size_t nbuffer, size_t n, mzr::Color color, size_t offset) {
    for (size_t i = 0; i < n; ++i) {
       vertex_buffer += 3;
       map_color_to_vertices(vertex_buffer + (i*4), 4, color);
    }
 }
 
-GLfloat2 project_point_to_screen(GLfloat2 p1, GLfloat2 screen_size) {
-   return (GLfloat2){(p1.x*2) / screen_size.x - 1, (p1.y*2) / (-screen_size.y) + 1};
+float2 project_point_to_screen(float2 p1, int2 screen_size) {
+   return (float2){(p1.x*2) / screen_size.x - 1, (p1.y*2) / (-screen_size.y) + 1};
 }
 
-GLfloat2 project_size_to_screen(GLfloat2 size, GLfloat2 screen_size) {
-   return (GLfloat2){(size.x*2)/screen_size.x, (size.y*2)/screen_size.y};
+float2 project_size_to_screen(float2 size, int2 screen_size) {
+   return (float2){(size.x*2)/screen_size.x, (size.y*2)/screen_size.y};
 }

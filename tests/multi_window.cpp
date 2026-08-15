@@ -10,6 +10,8 @@ int main() {
    mzr::Rectangle rectangleWin2 = {200, 200, 400, 400};
 
    while (!window1.ShouldClose() && !window2.ShouldClose()) {
+      mzr::ProcessEvents(); // You should only call this once
+
       window1.BeginDrawing();
       window1.Clear(mzr::Color::WHITE);
       window1.Draw(triangleWin1, mzr::Color::RED);
@@ -19,8 +21,6 @@ int main() {
       window2.Clear(mzr::Color::WHITE);
       window2.Draw(rectangleWin2, mzr::Color::RED);
       window2.EndDrawing();
-
-      mzr::ProcessEvents(); // You should only call this once
    }
 
    window1.Close();

@@ -10,13 +10,14 @@ int main() {
 
    while (!myWindow.ShouldClose()) {
       printf("%f\n", myWindow.GetFrameTime());
+
+      mzr::ProcessEvents();
       myWindow.BeginDrawing();
 
       myWindow.Clear(mzr::Color::BLACK);
 
       myWindow.Draw(myStaticRec);
 
-      mzr::ProcessEvents();
       myWindow.EndDrawing();
    }
 

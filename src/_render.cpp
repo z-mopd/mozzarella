@@ -13,7 +13,7 @@ static GLuint shared_vbo;
 
 static GLenum modes[STACK_SIZE];
 static std::size_t counts[STACK_SIZE];
-static std::size_t byte_offset[STACK_SIZE];
+static std::size_t byte_offset[STACK_SIZE] = {};
 
 static std::size_t stack_index = 0;
 
@@ -79,7 +79,7 @@ bool r_init() {
 
    glBindVertexArray(shared_vao);
    glBindBuffer(GL_ARRAY_BUFFER, shared_vbo);
-   glBufferData(GL_ARRAY_BUFFER, STACK_SIZE * 7 * sizeof(GLfloat), nullptr, GL_DYNAMIC_DRAW);
+   glBufferData(GL_ARRAY_BUFFER, STACK_SIZE * 7 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
 
    return true;
 }
@@ -98,13 +98,13 @@ GLFWwindow* first_context() {
 
 void update_vertex_attrib() {
    glBindBuffer(GL_ARRAY_BUFFER, shared_vbo);
-   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)0);
+   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
    glEnableVertexAttribArray(0);
-   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
    glEnableVertexAttribArray(1);
 }
 
-void submit_immediate_call(GLenum draw_mode, GLfloat *buffer, std::size_t buffer_size, std::size_t count) {
+void submit_immediate_call(GLenum draw_mode, GLfloat* buffer, std::size_t buffer_size, std::size_t count) {
    modes[stack_index] = draw_mode;
    counts[stack_index] = count;
    byte_offset[stack_index] = buffer_size;
@@ -130,9 +130,9 @@ void draw() {
 
 void draw_static(GLenum draw_mode, GLuint vbo, std::size_t count) {
    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)0);
+   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
    glEnableVertexAttribArray(0);
-   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
    glEnableVertexAttribArray(1);
    glDrawArrays(draw_mode, 0, count);
 }

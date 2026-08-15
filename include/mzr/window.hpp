@@ -6,6 +6,7 @@
 #include "color.hpp"
 #include <initializer_list>
 #include <unordered_map>
+#include <vector>
 
 namespace mzr {
 
@@ -36,6 +37,8 @@ class Window {
       void Close();
       bool ShouldClose();
 
+      void SetVisible(bool value);
+
       void MakeCurrent();
 
       void MouseCallback( void(*callback)(Window* window, MouseButton button, Action action) );
@@ -50,7 +53,9 @@ class Window {
       void BeginDrawing();
       void Clear(Color color);
 
-      void BatchDraw(std::initializer_list<Shape> shapes, Color color);
+      void BatchDraw(Triangle* triangles, std::size_t n, Color color);
+      void BatchDraw(Rectangle* rectangles, std::size_t n, Color color);
+      void BatchDraw(Circle* circles, std::size_t n, Color color);
 
       template <typename T>
       void Draw(StaticDrawable<T> static_drawable);

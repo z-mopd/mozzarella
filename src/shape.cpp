@@ -1,26 +1,25 @@
 #include "shape.hpp"
+#include "_vertex.hpp"
 #include <cmath>
+#include <iostream>
 
 namespace mzr {
 
-Triangle::Triangle(float2 p1, float2 p2, float2 p3) : p1(p1), p2(p2), p3(p3) {
-   /*
-   glGenVertexArrays(1, &this->_vao);
-   glGenBuffers(1, &this->_vbo);
 
-   glBindVertexArray(this->_vao);
+// Triangle
 
-   glBindBuffer(GL_ARRAY_BUFFER, this->_vbo);
-   glBufferData(GL_ARRAY_BUFFER, buffer_size(GLfloat, 3), _init, GL_DYNAMIC_DRAW);
+Triangle::Triangle() : p1({0, 0}), p2({0, 0}), p3({0, 0}) {}
+Triangle::Triangle(float2 p1, float2 p2, float2 p3) : p1(p1), p2(p2), p3(p3) {}
 
-   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
-   glEnableVertexAttribArray(0);
+std::size_t Triangle::_count() const {return 3;}
 
-   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(9 * sizeof(float)));
-   glEnableVertexAttribArray(1);
+void Triangle::GenerateVertices(float* vertex_buffer, int2 winsize, Color color) const {
+   float2 adjusted_p1 = project_point_to_screen(this->p1, winsize);
+   float2 adjusted_p2 = project_point_to_screen(this->p2, winsize);
+   float2 adjusted_p3 = project_point_to_screen(this->p3, winsize);
 
-   glBindBuffer(GL_ARRAY_BUFFER, 0);
-   glBindVertexArray(0);*/
+   gen_triangle_direct(vertex_buffer, 7, adjusted_p1, adjusted_p2, adjusted_p3);
+   map_color_ntimes(vertex_buffer, buffer_nsize(3), 3, color.normalized(), 3);
 }
 
 bool Triangle::CheckCollisionPoint(float2 point) const {
@@ -31,27 +30,22 @@ bool Triangle::CheckCollisionPoint(float2 point) const {
     return fabs(area1 + area2 + area3 - areaOrig) < 1e-6;
 }
 
-Rectangle::Rectangle(float2 pos, float2 size) : pos(pos), size(size) {
-   /*
-   glGenVertexArrays(1, &this->_vao);
-   glGenBuffers(1, &this->_vbo);
 
-   glBindVertexArray(this->_vao);
+// Rectangle
 
-   glBindBuffer(GL_ARRAY_BUFFER, this->_vbo);
-   glBufferData(GL_ARRAY_BUFFER, buffer_size(GLfloat, 6), _init, GL_DYNAMIC_DRAW);
-
-   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
-   glEnableVertexAttribArray(0);
-
-   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(18 * sizeof(float)));
-   glEnableVertexAttribArray(1);
-
-   glBindBuffer(GL_ARRAY_BUFFER, 0);
-   glBindVertexArray(0);*/
-}
-
+Rectangle::Rectangle() : pos({0, 0}), size({0, 0}) {}
+Rectangle::Rectangle(float2 pos, float2 size) : pos(pos), size(size) {}
 Rectangle::Rectangle(float x, float y, float width, float height) : pos{x, y}, size{width, height} {}
+
+std::size_t Rectangle::_count() const {return 6;}
+
+void Rectangle::GenerateVertices(float* vertex_buffer, int2 winsize, Color color) const {
+   float2 adjusted_pos = project_point_to_screen(pos, winsize);
+   float2 adjusted_size = project_size_to_screen(size, winsize);
+
+   gen_rectangle_vert(vertex_buffer, 7, adjusted_pos, adjusted_size);
+   map_color_ntimes(vertex_buffer, buffer_nsize(6), 6, color.normalized(), 3);
+}
 
 bool Rectangle::CheckCollisionPoint(float2 point) const {
    float min_x = this->pos.x;
@@ -63,9 +57,16 @@ bool Rectangle::CheckCollisionPoint(float2 point) const {
    return (min_x <= point.x && point.x <= max_x && min_y <= point.y && point.y <= max_y);
 }
 
-Circle::Circle(float2 pos, float radius) : pos(pos), radius(radius), SEGMENTS(CIRCLE_DEFAULT_SEGMENTS) {}
 
+// Circle
+
+Circle::Circle() : pos({0, 0}), radius(0), SEGMENTS(CIRCLE_DEFAULT_SEGMENTS) {}
+Circle::Circle(float2 pos, float radius) : pos(pos), radius(radius), SEGMENTS(CIRCLE_DEFAULT_SEGMENTS) {}
 Circle::Circle(float2 pos, float radius, std::size_t segments) : pos(pos), radius(radius), SEGMENTS(segments) {}
+
+std::size_t Circle::_count() const {return 0;}
+
+void Circle::GenerateVertices(float* vertex_buffer, int2 winsize, Color color) const {}
 
 bool Circle::CheckCollisionPoint(float2 point) const {
    float dx = point.x - this->pos.x;

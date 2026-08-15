@@ -2,12 +2,7 @@
 #define _HELPER_HPP
 
 #include "_common.hpp"
-#include "data_types.hpp"
 #include "input.hpp"
-
-GLfloat2 f2_to_glf2(mzr::float2 f2) {
-   return GLfloat2{f2.x, f2.y};
-}
 
 mzr::Action glfwEnum_to_action(int value) {
    switch(value) {

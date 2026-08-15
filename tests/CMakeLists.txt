@@ -16,7 +16,12 @@ if (BUILD_TESTS)
       static_drawing.cpp
    )
 
+   add_executable(batch_drawing
+      batch_drawing.cpp
+   )
+
    link_include(main)
    link_include(multi_window)
    link_include(static_drawing)
+   link_include(batch_drawing)
 endif()

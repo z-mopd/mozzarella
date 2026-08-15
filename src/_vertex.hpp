@@ -2,6 +2,7 @@
 #define VERTEX_HPP
 
 #include "_common.hpp"
+#include "data_types.hpp"
 #include "color.hpp"
 #include <cstddef>
 
@@ -9,27 +10,29 @@
 #define buffer_byte_size(type, points) ( buffer_nsize(points) * sizeof(type) )
 #define alloc_shape_buffer(type, buffer_name, points) type buffer_name[buffer_nsize(points)] = {}
 
-void points_to_vertices(GLfloat2* point_buffer, size_t npoints, GLfloat* vertex_buffer, size_t vertex_span);
-void vertices_to_points(GLfloat* vertex_buffer, size_t nbuffer, size_t vertex_span, GLfloat2* point_buffer);
+using namespace mzr;
 
-void gen_triangle_direct(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos1, GLfloat2 pos2, GLfloat2 pos3);
-void gen_triangle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat2 offset1, GLfloat2 offset2);
-void gen_triangle_degrees(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat2 offset1, GLfloat2 offset2, float degrees);
+void points_to_vertices(float2* point_buffer, size_t npoints, float* vertex_buffer, size_t vertex_span);
+void vertices_to_points(float* vertex_buffer, size_t nbuffer, size_t vertex_span, float2* point_buffer);
 
-void gen_rhtriangle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat2 offset);
-void gen_rhtriangle_degrees(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat2 offset, float degrees);
+void gen_triangle_direct(float* vertex_buffer, size_t vertex_span, float2 pos1, float2 pos2, float2 pos3);
+void gen_triangle_vert(float* vertex_buffer, size_t vertex_span, float2 pos, float2 offset1, float2 offset2);
+void gen_triangle_degrees(float* vertex_buffer, size_t vertex_span, float2 pos, float2 offset1, float2 offset2, float degrees);
 
-void gen_eqtriangle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat side_length);
-void gen_rectangle_vert(GLfloat* vertices, size_t vertex_span, GLfloat2 pos, GLfloat2 size);
+void gen_rhtriangle_vert(float* vertex_buffer, size_t vertex_span, float2 pos, float2 offset);
+void gen_rhtriangle_degrees(float* vertex_buffer, size_t vertex_span, float2 pos, float2 offset, float degrees);
 
-void gen_circle_vert(GLfloat* vertex_buffer, size_t vertex_span, GLfloat2 pos, GLfloat radius);
+void gen_eqtriangle_vert(float* vertex_buffer, size_t vertex_span, float2 pos, float side_length);
+void gen_rectangle_vert(float* vertices, size_t vertex_span, float2 pos, float2 size);
 
-void set_vertices_to(GLfloat* vertex_buffer, size_t nbuffer, size_t vertex_span, size_t offset, float value);
+void gen_circle_vert(float* vertex_buffer, size_t vertex_span, float2 pos, float radius);
 
-void map_color_to_vertices(GLfloat* vertex_buffer, size_t nbuffer, mzr::Color color);
-void map_color_ntimes(GLfloat* vertex_buffer, size_t nbuffer, size_t n, mzr::Color color, size_t offset);
+void set_vertices_to(float* vertex_buffer, size_t nbuffer, size_t vertex_span, size_t offset, float value);
 
-GLfloat2 project_point_to_screen(GLfloat2 p1, GLfloat2 screen_size);
-GLfloat2 project_size_to_screen(GLfloat2 size, GLfloat2 screen_size);
+void map_color_to_vertices(float* vertex_buffer, size_t nbuffer, Color color);
+void map_color_ntimes(float* vertex_buffer, size_t nbuffer, size_t n, Color color, size_t offset);
+
+float2 project_point_to_screen(float2 p1, int2 screen_size);
+float2 project_size_to_screen(float2 size, int2 screen_size);
 
 #endif
