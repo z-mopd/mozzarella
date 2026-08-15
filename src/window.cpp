@@ -41,6 +41,7 @@ Window::Window(int x, int y, int width, int height, const char* title, std::init
 Window::Window(int x, int y, int width, int height, const char* title) : Window({x, y}, {width, height}, title, {}) {}
 
 void Window::Close() {
+   glfwSetWindowShouldClose(static_cast<GLFWwindow*>(this->_underlying), GLFW_TRUE); // Just in case
    glfwDestroyWindow(static_cast<GLFWwindow*>(this->_underlying));
    this->_underlying = nullptr;
    glfwMakeContextCurrent(nullptr);
