@@ -1,7 +1,6 @@
 #ifndef VERTEX_HPP
 #define VERTEX_HPP
 
-#include "_common.hpp"
 #include "data_types.hpp"
 #include "color.hpp"
 #include <cstddef>

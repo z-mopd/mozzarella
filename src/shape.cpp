@@ -1,7 +1,6 @@
 #include "shape.hpp"
 #include "_vertex.hpp"
 #include <cmath>
-#include <iostream>
 
 namespace mzr {
 

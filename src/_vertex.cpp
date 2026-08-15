@@ -1,5 +1,4 @@
 #include "_vertex.hpp"
-#include "_common.hpp"
 #include <cassert>
 #include <cmath>
 #include <cstddef>
