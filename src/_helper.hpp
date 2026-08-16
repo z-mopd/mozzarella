@@ -3,20 +3,39 @@
 
 #include "_common.hpp"
 #include "input.hpp"
+#include <iostream>
+
+static const int first_let = static_cast<int>(mzr::Key::A);
+static const int last_let = static_cast<int>(mzr::Key::Z);
+
+static const int first_num = static_cast<int>(mzr::Key::ZERO);
+static const int last_num = static_cast<int>(mzr::Key::NINE);
 
 int key_to_glfwKey(mzr::Key key) {
    switch (key) {
       case mzr::Key::LSHIFT:
          return GLFW_KEY_LEFT_SHIFT;
-   }
+      case mzr::Key::RSHIFT:
+         return GLFW_KEY_RIGHT_SHIFT;
 
-   static const int first = static_cast<int>(mzr::Key::A);
-   static const int last = static_cast<int>(mzr::Key::Z);
+      case mzr::Key::ESCAPE:
+         return GLFW_KEY_ESCAPE;
+      case mzr::Key::ENTER:
+         return GLFW_KEY_ENTER;
+      case mzr::Key::TAB:
+         return GLFW_KEY_TAB;
+      case mzr::Key::BACKSPACE:
+         return GLFW_KEY_BACKSPACE;
+   }
 
    const int k = static_cast<int>(key);
 
-   if (k >= first && k <= last)
-      return GLFW_KEY_A + (k - first);
+   if (k >= first_let && k <= last_let)
+      return GLFW_KEY_A + (k - first_let);
+
+   if (k >= first_num && k <= last_num) {
+      return GLFW_KEY_0 + (k - first_num);
+   }
 
    return GLFW_DONT_CARE;
 }
@@ -25,9 +44,26 @@ mzr::Key glfwKey_to_key(int key) {
    switch (key) {
       case GLFW_KEY_LEFT_SHIFT:
          return mzr::Key::LSHIFT;
+      case GLFW_KEY_RIGHT_SHIFT:
+         return mzr::Key::RSHIFT;
+
+      case GLFW_KEY_ESCAPE:
+         return mzr::Key::ESCAPE;
+      case GLFW_KEY_ENTER:
+         return mzr::Key::ENTER;
+      case GLFW_KEY_TAB:
+         return mzr::Key::TAB;
+      case GLFW_KEY_BACKSPACE:
+         return mzr::Key::BACKSPACE;
    }
 
-   return static_cast<mzr::Key>(key - GLFW_KEY_A);
+   if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z)
+      return static_cast<mzr::Key>(first_let + (key - GLFW_KEY_A));
+
+   if (key >= GLFW_KEY_0 && key <= GLFW_KEY_0)
+      return static_cast<mzr::Key>(first_num + (key - GLFW_KEY_0));
+
+   return mzr::Key::Count;
 }
 
 int msButton_to_glfwButton(mzr::MouseButton button) {

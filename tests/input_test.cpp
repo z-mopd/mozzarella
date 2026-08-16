@@ -44,6 +44,10 @@ int main() {
          if (inputWindow.IsKeyReleased(mzr::Key::LSHIFT)) {
             std::cout << "left shift was released for this frame!\n";
          }
+
+         if (inputWindow.IsKeyPressed(mzr::Key::FOUR)) {
+            std::cout << "four pressed\n";
+         }
       inputWindow.EndFrame();
    }
 

@@ -141,14 +141,14 @@ bool Window::IsKeyDown(Key key) {
 
 bool Window::IsKeyPressed(Key key) {
    int glfw_key = key_to_glfwKey(key);
-   int current_state = glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), key_to_glfwKey(key));
+   int current_state = glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), glfw_key);
 
    return _key_prev_states[key] == GLFW_RELEASE && current_state == GLFW_PRESS;
 }
 
 bool Window::IsKeyReleased(Key key) {
    int glfw_key = key_to_glfwKey(key);
-   int current_state = glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), key_to_glfwKey(key));
+   int current_state = glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), glfw_key);
 
    return _key_prev_states[key] == GLFW_PRESS && current_state == GLFW_RELEASE;
 }
