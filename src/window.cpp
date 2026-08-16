@@ -2,13 +2,12 @@
 #include "_helper.hpp"
 #include "_vertex.hpp"
 #include "_render.hpp"
+#include "core.hpp"
+
 #include "window.hpp"
-#include "input.hpp"
-#include "shape.hpp"
+
 #include <GLFW/glfw3.h>
 #include <vector>
-
-void noop(mzr::Window* window, mzr::MouseButton button, mzr::Action action) {}
 
 namespace mzr {
 
@@ -26,10 +25,22 @@ Window::Window(int2 pos, int2 size, const char* title, std::initializer_list<int
    glfwSetWindowUserPointer(underlying, this);
    glfwSetInputMode(underlying, GLFW_STICKY_MOUSE_BUTTONS, GLFW_FALSE);
 
-   this->_callback = noop;
+   this->_key_callback = noop<Event::KEY>;
+   glfwSetKeyCallback(underlying, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+      auto casted_window = static_cast<Window*>(glfwGetWindowUserPointer(window));
+      casted_window->_key_callback(casted_window, glfwKey_to_key(key), glfwEnum_to_action(action));
+   });
+
+   this->_ms_callback = noop<Event::MOUSE>;
    glfwSetMouseButtonCallback(underlying, [](GLFWwindow* window, int button, int action, int mods) {
       auto casted_window = static_cast<Window*>(glfwGetWindowUserPointer(window));
-      casted_window->_callback(casted_window, static_cast<MouseButton>(button), glfwEnum_to_action(action));
+      casted_window->_ms_callback(casted_window, glfwButton_to_msButton(button), glfwEnum_to_action(action));
+   });
+
+   this->_cursor_callback = noop<Event::CURSOR>;
+   glfwSetCursorPosCallback(underlying, [](GLFWwindow* window, double xpos, double ypos) {
+      auto casted_window = static_cast<Window*>(glfwGetWindowUserPointer(window));
+      casted_window->_cursor_callback(casted_window, xpos, ypos);
    });
 
    glfwMakeContextCurrent(underlying); // everything before this should not rely on the current context
@@ -51,6 +62,10 @@ bool Window::ShouldClose() {
    return glfwWindowShouldClose(static_cast<GLFWwindow*>(this->_underlying));
 }
 
+void Window::SetShouldClose(bool value) {
+   glfwSetWindowShouldClose(static_cast<GLFWwindow*>(this->_underlying), value);
+}
+
 void Window::SetVisible(bool value) {
    if (value)
       glfwShowWindow(static_cast<GLFWwindow*>(this->_underlying));
@@ -62,8 +77,35 @@ void Window::MakeCurrent() {
    glfwMakeContextCurrent(static_cast<GLFWwindow*>(this->_underlying));
 }
 
-void Window::MouseCallback( void(*callback)(Window* window, MouseButton button, Action action) ) {
-   this->_callback = callback;
+void Window::BeginFrame() {
+   this->_frame_last_marked = GetElapsedTime();
+}
+
+void Window::EndFrame() {
+   for (std::size_t i = 0; i < _key_prev_states.size(); ++i) {
+      _key_prev_states[i] = glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), key_to_glfwKey(static_cast<Key>(i)));
+   }
+   for (std::size_t i = 0; i < _mouse_prev_states.size(); ++i) {
+      _mouse_prev_states[i] = glfwGetMouseButton(static_cast<GLFWwindow*>(this->_underlying), i);
+   }
+   this->_frame_time = GetElapsedTime() - this->_frame_last_marked;
+}
+
+double Window::GetFrameTime() {
+   return this->_frame_time;
+}
+
+template <>
+void Window::SetCallback<Event::KEY>(Callback_t<Event::KEY> callback) {
+   this->_key_callback = callback;
+}
+template <>
+void Window::SetCallback<Event::MOUSE>(Callback_t<Event::MOUSE> callback) {
+   this->_ms_callback = callback;
+}
+template <>
+void Window::SetCallback<Event::CURSOR>(Callback_t<Event::CURSOR> callback) {
+   this->_cursor_callback = callback;
 }
 
 float2 Window::GetMousePos() {
@@ -72,34 +114,67 @@ float2 Window::GetMousePos() {
    return float2{static_cast<float>(x), static_cast<float>(y)};
 }
 
+
+// Input functions
+
+bool Window::IsMouseDown(MouseButton button) {
+   return GLFW_PRESS == glfwGetMouseButton(static_cast<GLFWwindow*>(this->_underlying), msButton_to_glfwButton(button));
+}
+
 bool Window::IsMousePressed(MouseButton button) {
-   Action current_state = glfwEnum_to_action(glfwGetMouseButton(static_cast<GLFWwindow*>(this->_underlying), button));
+   int glfw_button = msButton_to_glfwButton(button);
+   int current_state = glfwGetMouseButton(static_cast<GLFWwindow*>(this->_underlying), glfw_button);
 
-   if (_prev_state != Action::PRESS && current_state == Action::PRESS) {
-      _prev_state = Action::PRESS;
-      return true;
-   }
-   else {
-      _prev_state = current_state;
-      return false;
-   }
+   return _mouse_prev_states[glfw_button] == GLFW_RELEASE && current_state == GLFW_PRESS;
 }
 
-double Window::GetFrameTime() {
-   return this->_dt;
+bool Window::IsMouseReleased(MouseButton button) {
+   int glfw_button = msButton_to_glfwButton(button);
+   int current_state = glfwGetMouseButton(static_cast<GLFWwindow*>(this->_underlying), glfw_button);
+
+   return _mouse_prev_states[glfw_button] == GLFW_PRESS && current_state == GLFW_RELEASE;
 }
+
+bool Window::IsKeyDown(Key key) {
+   return GLFW_PRESS == glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), key_to_glfwKey(key));
+}
+
+bool Window::IsKeyPressed(Key key) {
+   int glfw_key = key_to_glfwKey(key);
+   int current_state = glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), key_to_glfwKey(key));
+
+   return _key_prev_states[key] == GLFW_RELEASE && current_state == GLFW_PRESS;
+}
+
+bool Window::IsKeyReleased(Key key) {
+   int glfw_key = key_to_glfwKey(key);
+   int current_state = glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), key_to_glfwKey(key));
+
+   return _key_prev_states[key] == GLFW_PRESS && current_state == GLFW_RELEASE;
+}
+
+
+// Draw lifecycle
 
 void Window::BeginDrawing() {
    glfwMakeContextCurrent(static_cast<GLFWwindow*>(this->_underlying));
    glUseProgram(query_shader_program());
-   this->_last_marked = glfwGetTime();
+   this->_draw_last_marked = GetElapsedTime();
+}
+
+void Window::EndDrawing() {
+   this->_draw_time = GetElapsedTime() - this->_draw_last_marked;
+   glfwSwapBuffers(static_cast<GLFWwindow*>(this->_underlying));
+}
+
+double Window::GetDrawTime() {
+   return this->_draw_time;
 }
 
 void Window::Clear(Color color) {
    glClearColor(color.r / 255, color.g / 255, color.b / 255, color.a);
    glClear(GL_COLOR_BUFFER_BIT);
 }
-
 
 // Batching
 
@@ -220,12 +295,6 @@ void Window::Draw(Circle circle, Color color) {
 
 void Window::FlushRender() {
    flush();
-}
-
-
-void Window::EndDrawing() {
-   this->_dt = glfwGetTime() - this->_last_marked;
-   glfwSwapBuffers(static_cast<GLFWwindow*>(this->_underlying));
 }
 
 }

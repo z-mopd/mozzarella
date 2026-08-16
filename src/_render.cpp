@@ -38,7 +38,7 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "   FragColor = vertColor;\n"
 "}\n\0";
 
-bool r_init() {
+bool r_init(double* init_time) {
    if (!glfwInit()) {
       std::cerr << "Could not start glfw!\n";
       return false;
@@ -80,6 +80,8 @@ bool r_init() {
    glBindVertexArray(shared_vao);
    glBindBuffer(GL_ARRAY_BUFFER, shared_vbo);
    glBufferData(GL_ARRAY_BUFFER, STACK_SIZE * 7 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+
+   *init_time = glfwGetTime();
 
    return true;
 }
@@ -145,6 +147,9 @@ void flush() {
 
 void r_close() {
    glDeleteProgram(shader_program);
+   glDeleteBuffers(1, &shared_vbo);
+   glDeleteVertexArrays(1, &shared_vao);
    glfwDestroyWindow(_first_context);
+   glfwMakeContextCurrent(nullptr);
    glfwTerminate();
 }

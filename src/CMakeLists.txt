@@ -2,7 +2,7 @@ set(mzrlib_sources
    external/glad.c
    _vertex.cpp
    _render.cpp
-   init.cpp
+   core.cpp
    window.cpp
    shape.cpp
    color.cpp

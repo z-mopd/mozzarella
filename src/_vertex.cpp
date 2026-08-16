@@ -1,7 +1,6 @@
 #include "_vertex.hpp"
 #include <cassert>
 #include <cmath>
-#include <cstddef>
 
 #define SPAN_ASSERT(condition)   assert(((void)"Vertex span cannot be below threshold!", condition))
 #define BUFFER_ASSERT(condition) assert(((void)"Buffer does not meet condition!", condition))

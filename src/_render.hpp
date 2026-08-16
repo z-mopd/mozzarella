@@ -5,7 +5,7 @@
 #include "events.hpp"
 #include <cstddef>
 
-bool r_init();
+bool r_init(double* init_time);
 
 void mzr::ProcessEvents();
 GLuint query_shader_program();

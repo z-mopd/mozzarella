@@ -20,8 +20,13 @@ if (BUILD_TESTS)
       batch_drawing.cpp
    )
 
+   add_executable(input_test
+      input_test.cpp
+   )
+
    link_include(main)
    link_include(multi_window)
    link_include(static_drawing)
    link_include(batch_drawing)
+   link_include(input_test)
 endif()

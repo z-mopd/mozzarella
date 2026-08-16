@@ -9,16 +9,21 @@ int main() {
    mzr::StaticDrawable<mzr::Rectangle> myStaticRec = {mzr::Color::RED, 0, 0, 400, 200};
 
    while (!myWindow.ShouldClose()) {
-      printf("%f\n", myWindow.GetFrameTime());
-
       mzr::ProcessEvents();
-      myWindow.BeginDrawing();
+      printf("%f\n", myWindow.GetFrameTime()); // Usually, FrameTime is longer than DrawTime.
+                                                       // FrameTime is: time spent between BeginFrame() and DrawFrame()
+      printf("%f\n", myWindow.GetDrawTime());  // DrawTime is: time spent executing draw functions
 
-      myWindow.Clear(mzr::Color::BLACK);
+      myWindow.BeginFrame();
 
-      myWindow.Draw(myStaticRec);
+         myWindow.BeginDrawing();
 
-      myWindow.EndDrawing();
+         myWindow.Clear(mzr::Color::BLACK);
+
+         myWindow.Draw(myStaticRec);
+
+         myWindow.EndDrawing();
+      myWindow.EndFrame();
    }
 
    myWindow.Close();

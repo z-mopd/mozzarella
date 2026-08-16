@@ -5,6 +5,9 @@ namespace mzr {
 
 bool Init();
 
+double GetElapsedTime();
+double GetCurrentTime();
+
 void Close();
 
 }
