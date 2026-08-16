@@ -23,11 +23,11 @@ class Window {
 
    void* _underlying;
 
-   double _frame_last_marked;
-   double _frame_time;
+   double _frame_last_marked = 0;
+   double _frame_time = 0;
 
-   double _draw_last_marked;
-   double _draw_time;
+   double _draw_last_marked = 0;
+   double _draw_time = 0;
 
    Callback_t<Event::KEY>     _key_callback;
    Callback_t<Event::MOUSE>   _ms_callback;
