@@ -24,6 +24,7 @@ int main() {
 
    while (!inputWindow.ShouldClose()) {
       mzr::ProcessEvents();
+
       inputWindow.BeginFrame();
          if (inputWindow.IsMouseDown(mzr::MouseButton::LEFT)) {
             std::cout << "the left mouse button is currently down!\n";

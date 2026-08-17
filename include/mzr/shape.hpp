@@ -20,7 +20,6 @@ class Shape {
    friend class Window;
 };
 
-// TODO: implement static drawing
 template <typename Shape_T>
 class StaticDrawable {
    static std::size_t _NEXT_ID;

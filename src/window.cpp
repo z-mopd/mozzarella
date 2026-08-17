@@ -45,6 +45,8 @@ Window::Window(int2 pos, int2 size, const char* title, std::initializer_list<int
 
    glfwMakeContextCurrent(underlying); // everything before this should not rely on the current context
    glViewport(pos.x, pos.y, size.x, size.y);
+   glUseProgram(query_shader_program());
+   glfwSwapInterval(0); // turn off VSync
 }
 
 Window::Window(int2 pos, int2 size, const char* title) : Window(pos, size, title, {}) {}
@@ -77,8 +79,17 @@ void Window::MakeCurrent() {
    glfwMakeContextCurrent(static_cast<GLFWwindow*>(this->_underlying));
 }
 
+void Window::SetTargetFPS(int fps) {
+    if (fps < 1)
+       return;
+    else
+       this->_frame_target = 1.0 / static_cast<double>(fps);
+}
+
 void Window::BeginFrame() {
-   this->_frame_last_marked = GetElapsedTime();
+   _frame_current = GetElapsedTime();
+   _update = _frame_current - _frame_prev;
+   _frame_prev = _frame_current;
 }
 
 void Window::EndFrame() {
@@ -88,7 +99,20 @@ void Window::EndFrame() {
    for (std::size_t i = 0; i < _mouse_prev_states.size(); ++i) {
       _mouse_prev_states[i] = glfwGetMouseButton(static_cast<GLFWwindow*>(this->_underlying), i);
    }
-   this->_frame_time = GetElapsedTime() - this->_frame_last_marked;
+
+   _frame_current = GetElapsedTime();
+   _frame_time = _update + (_frame_current - _frame_prev);
+   _frame_prev = _frame_current;
+
+   if (_frame_time < _frame_target) {
+      SleepTime(_frame_target - _frame_time);
+
+      _frame_current = GetElapsedTime();
+      double waitTime = _frame_current - _frame_prev;
+      _frame_prev = _frame_current;
+
+      _frame_time += waitTime;
+   }
 }
 
 double Window::GetFrameTime() {
@@ -158,13 +182,12 @@ bool Window::IsKeyReleased(Key key) {
 
 void Window::BeginDrawing() {
    glfwMakeContextCurrent(static_cast<GLFWwindow*>(this->_underlying));
-   glUseProgram(query_shader_program());
    this->_draw_last_marked = GetElapsedTime();
 }
 
 void Window::EndDrawing() {
-   this->_draw_time = GetElapsedTime() - this->_draw_last_marked;
    glfwSwapBuffers(static_cast<GLFWwindow*>(this->_underlying));
+   this->_draw_time = GetElapsedTime() - this->_draw_last_marked;
 }
 
 double Window::GetDrawTime() {
@@ -230,7 +253,7 @@ void Window::BatchDraw(Circle* circles, std::size_t n, Color color) {}
 // * another way to implement static drawables
 // * this isn't elegant or performant enough
 template<>
-void Window::Draw<Triangle>(StaticDrawable<Triangle> triangle) {
+void Window::Draw<Triangle>(StaticDrawable<Triangle>& triangle) {
    if (_static_vbos.find(triangle._id) != _static_vbos.end()) {
       draw_static(GL_TRIANGLES, _static_vbos[triangle._id], 3);
    }
@@ -248,7 +271,7 @@ void Window::Draw<Triangle>(StaticDrawable<Triangle> triangle) {
    }
 }
 template<>
-void Window::Draw<Rectangle>(StaticDrawable<Rectangle> rectangle) {
+void Window::Draw<Rectangle>(StaticDrawable<Rectangle>& rectangle) {
    if (_static_vbos.find(rectangle._id) != _static_vbos.end()) {
       draw_static(GL_TRIANGLES, _static_vbos[rectangle._id], 6);
    }
@@ -266,7 +289,7 @@ void Window::Draw<Rectangle>(StaticDrawable<Rectangle> rectangle) {
    }
 }
 template<>
-void Window::Draw<Circle>(StaticDrawable<Circle>) {}
+void Window::Draw<Circle>(StaticDrawable<Circle>&) {}
 
 
 // Regular draw functions

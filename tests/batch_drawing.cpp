@@ -28,15 +28,15 @@ int main() {
 
    while (!batchedWindow.ShouldClose()) {
       mzr::ProcessEvents();
-      batchedWindow.BeginFrame();
       printf("%f\n", batchedWindow.GetFrameTime());
-      batchedWindow.BeginDrawing();
 
-      batchedWindow.Clear(mzr::Color::WHITE);
+      batchedWindow.BeginFrame();
+         batchedWindow.BeginDrawing();
 
-      batchedWindow.BatchDraw(triangles.data(), triangles.size(), mzr::Color::RED);
+         batchedWindow.Clear(mzr::Color::WHITE);
+         batchedWindow.BatchDraw(triangles.data(), triangles.size(), mzr::Color::RED);
 
-      batchedWindow.EndDrawing();
+         batchedWindow.EndDrawing();
       batchedWindow.EndFrame();
    }
 

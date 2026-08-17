@@ -1,5 +1,6 @@
 #include "_common.hpp"
 #include "_render.hpp"
+#include <thread>
 
 #include "core.hpp"
 
@@ -17,6 +18,14 @@ double GetElapsedTime() {
 
 double GetCurrentTime() {
    return glfwGetTime() - init_time;
+}
+
+void SleepTime(double seconds) {
+   if (seconds < 0)
+      return;
+
+   long nsec = seconds*1000000000L;
+   std::this_thread::sleep_for(std::chrono::nanoseconds(nsec));
 }
 
 void Close() {

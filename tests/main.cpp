@@ -2,7 +2,7 @@
 #include <mzr/input.hpp>
 #include <mzr/shape.hpp>
 #include <mzr/window.hpp>
-#include <mzr/events.hpp>
+#include <mzr/event.hpp>
 #include <mzr/core.hpp>
 
 #include <iostream>
@@ -35,11 +35,10 @@ int main() {
          }
 
          myWindow.BeginDrawing();
-         myWindow.Clear(mzr::Color::BLACK);
+            myWindow.Clear(mzr::Color::BLACK);
 
-         myWindow.Draw(myTriangle, mzr::Color::RED);
-         myWindow.Draw(myRec, mzr::Color::RED);
-
+            myWindow.Draw(myTriangle, mzr::Color::RED);
+            myWindow.Draw(myRec, mzr::Color::RED);
          myWindow.EndDrawing();
       myWindow.EndFrame();
       mzr::ProcessEvents(); // You should mzr::ProcessEvents after or before any frames

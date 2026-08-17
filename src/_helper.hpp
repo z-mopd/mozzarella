@@ -3,7 +3,6 @@
 
 #include "_common.hpp"
 #include "input.hpp"
-#include <iostream>
 
 static const int first_let = static_cast<int>(mzr::Key::A);
 static const int last_let = static_cast<int>(mzr::Key::Z);

@@ -5,7 +5,7 @@
 
 #include "mzr/color.hpp"
 #include "mzr/data_types.hpp"
-#include "mzr/events.hpp"
+#include "mzr/event.hpp"
 #include "mzr/core.hpp"
 #include "mzr/input.hpp"
 #include "mzr/shader.hpp"

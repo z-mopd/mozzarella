@@ -8,6 +8,8 @@ bool Init();
 double GetElapsedTime();
 double GetCurrentTime();
 
+void SleepTime(double seconds);
+
 void Close();
 
 }

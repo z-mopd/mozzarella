@@ -1,7 +1,8 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
-#include "events.hpp"
+#include "core.hpp"
+#include "event.hpp"
 #include "input.hpp"
 #include "shape.hpp"
 #include "color.hpp"
@@ -23,10 +24,14 @@ class Window {
 
    void* _underlying;
 
-   double _frame_last_marked = 0;
+   double _frame_target = 0;
+
+   double _update = 0;
+   double _frame_current = GetElapsedTime();
+   double _frame_prev = _frame_prev;
    double _frame_time = 0;
 
-   double _draw_last_marked = 0;
+   double _draw_last_marked = _frame_prev;
    double _draw_time = 0;
 
    Callback_t<Event::KEY>     _key_callback;
@@ -49,6 +54,7 @@ class Window {
 
       void MakeCurrent();
 
+      void SetTargetFPS(int fps);
       void BeginFrame();
       void EndFrame();
       double GetFrameTime();
@@ -76,7 +82,7 @@ class Window {
       void BatchDraw(Circle* circles, std::size_t n, Color color);
 
       template <typename T>
-      void Draw(StaticDrawable<T> static_drawable);
+      void Draw(StaticDrawable<T>& static_drawable);
 
       void Draw(Triangle triangle, Color color);
       void Draw(Rectangle rectangle, Color color);
