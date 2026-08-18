@@ -31,7 +31,7 @@ class StaticDrawable {
 
    public:
       template <typename... Args>
-      StaticDrawable(Color color, Args&&... args) : _id(++_NEXT_ID), _color(color), _shape(std::forward<Args>(args)...) {}
+      StaticDrawable(Color color, Args&&... args) : _id(_NEXT_ID++), _color(color), _shape(std::forward<Args>(args)...) {}
 
    friend class Window;
 };
