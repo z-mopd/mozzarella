@@ -32,6 +32,11 @@ struct float4 {
    float w;
 };
 
+struct interleaved_vertex {
+   float x, y, z;
+   float r, g, b, a;
+};
+
 }
 
 #endif

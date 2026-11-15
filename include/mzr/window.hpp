@@ -7,8 +7,9 @@
 #include "shape.hpp"
 #include "color.hpp"
 #include <array>
+#include <cstddef>
 #include <initializer_list>
-#include <unordered_map>
+#include <type_traits>
 
 namespace mzr {
 
@@ -18,18 +19,17 @@ enum class WindowHints {
 };
 
 class Window {
-   std::unordered_map<std::size_t, std::size_t> _static_vbos;
    std::array<bool, Key::Count> _key_prev_states;
    std::array<bool, 3> _mouse_prev_states;
 
-   void* _underlying;
+   struct nthandle;
+   nthandle* _underlying;
 
    double _frame_target = 0;
 
    double _update = 0;
    double _frame_current = GetElapsedTime();
-   double _frame_prev = _frame_prev;
-   double _frame_time = 0;
+   double _frame_prev = _frame_prev; double _frame_time = 0;
 
    double _draw_last_marked = _frame_prev;
    double _draw_time = 0;
@@ -81,12 +81,46 @@ class Window {
       void BatchDraw(Rectangle* rectangles, std::size_t n, Color color);
       void BatchDraw(Circle* circles, std::size_t n, Color color);
 
+      void Draw();
+
       template <typename T>
       void Draw(StaticDrawable<T>& static_drawable);
 
-      void Draw(Triangle triangle, Color color);
-      void Draw(Rectangle rectangle, Color color);
-      void Draw(Circle circle, Color color);
+      template <typename Shape_T>
+      requires std::is_base_of_v<Shape, Shape_T>
+      void Draw(Shape_T& shape, Color color) {
+         using TDrawable = IDrawable<Shape_T>;
+         TDrawable::immediateDraw(shape, color);
+      }
+
+      template <typename Shape_T>
+      requires std::is_base_of_v<Shape, Shape_T>
+      void Draw(Shape_T&& shape, Color color) {
+         using TDrawable = IDrawable<Shape_T>;
+         TDrawable::immediateDraw(shape, color);
+      }
+
+      template <typename Shape_T>
+      void Draw(Static<Shape_T>& staticShape) {
+         using TDrawable = IDrawable<Shape_T>;
+         staticShape.shape();
+      }
+
+      /*
+      void Draw(Text text, Color color);
+
+      template <typename ...Args>
+      void Draw(Text fmt, Color color, const Args&&... args);
+
+      void DrawText(Font font, const char* text, float size, float x, float y, Color color);
+
+      void DrawText(const char* text, float size, float x, float y, Color color);
+
+      template <typename ...Args>
+      void DrawText(const char* fmt, float size, float x, float y, Color color, const Args&&... args) {
+         Draw(std::format(fmt, args...).c_str(), size, x, y, color);
+      }*/
+
 
       void FlushRender();
 };

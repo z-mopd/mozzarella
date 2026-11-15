@@ -1,15 +1,41 @@
 #include "_common.hpp"
 #include "_helper.hpp"
-#include "_vertex.hpp"
-#include "_render.hpp"
 #include "core.hpp"
+#include "platform/api.h"
 
 #include "window.hpp"
 
 #include <GLFW/glfw3.h>
-#include <vector>
+
+void createOrthographic(float* buffer, float left, float right, float bottom, float top, float near, float far) {
+   const float sx = 2 / (right - left);
+   const float sy = 2 / (top - bottom);
+   const float sz = 2 / (near - far);
+   const float tx = -(right + left) / (right - left);
+   const float ty = -(top + bottom) / (top - bottom);
+   const float tz = -(far + near) / (near - far);
+
+
+   buffer[0] = sx;  buffer[1] = 0;   buffer[2] = 0;   buffer[3] = 0;
+
+   buffer[4] = 0;   buffer[5] = sy;  buffer[6] = 0;   buffer[7] = 0;
+
+   buffer[8] = 0;   buffer[9] = 0;   buffer[10] = sz; buffer[11] = 0;
+
+   buffer[12] = tx; buffer[13] = ty; buffer[14] = tz; buffer[15] = 1;
+}
 
 namespace mzr {
+
+struct Window::nthandle {
+   MzrWindow   mzrWindow;
+   GLFWwindow* glfwWindow;
+
+   ~nthandle() {
+      api_done_window(global_ctx, mzrWindow);
+      glfwWindow = nullptr;
+   }
+};
 
 Window::Window(int2 pos, int2 size, const char* title, std::initializer_list<int> hints_values) : pos(pos), size(size) {
    if (hints_values.size() > 0) {
@@ -19,8 +45,11 @@ Window::Window(int2 pos, int2 size, const char* title, std::initializer_list<int
       }
    }
 
-   this->_underlying = glfwCreateWindow(size.x, size.y, title, nullptr, first_context());
-   GLFWwindow* underlying = static_cast<GLFWwindow*>(this->_underlying);
+   this->_underlying = new nthandle();
+   MzrWindow window = api_create_window(global_ctx, title, pos.x, pos.y, size.x, size.y);
+   GLFWwindow* underlying = getGlfw(window);
+   _underlying->mzrWindow = window;
+   _underlying->glfwWindow = underlying;
 
    glfwSetWindowUserPointer(underlying, this);
    glfwSetInputMode(underlying, GLFW_STICKY_MOUSE_BUTTONS, GLFW_FALSE);
@@ -45,8 +74,9 @@ Window::Window(int2 pos, int2 size, const char* title, std::initializer_list<int
 
    glfwMakeContextCurrent(underlying); // everything before this should not rely on the current context
    glViewport(pos.x, pos.y, size.x, size.y);
-   glUseProgram(query_shader_program());
    glfwSwapInterval(0); // turn off VSync
+
+   api_bind_shader(global_ctx, api_shader2d(global_ctx));
 }
 
 Window::Window(int2 pos, int2 size, const char* title) : Window(pos, size, title, {}) {}
@@ -54,29 +84,27 @@ Window::Window(int x, int y, int width, int height, const char* title, std::init
 Window::Window(int x, int y, int width, int height, const char* title) : Window({x, y}, {width, height}, title, {}) {}
 
 void Window::Close() {
-   glfwSetWindowShouldClose(static_cast<GLFWwindow*>(this->_underlying), GLFW_TRUE); // Just in case
-   glfwDestroyWindow(static_cast<GLFWwindow*>(this->_underlying));
+   delete this->_underlying;
    this->_underlying = nullptr;
-   glfwMakeContextCurrent(nullptr);
 }
 
 bool Window::ShouldClose() {
-   return glfwWindowShouldClose(static_cast<GLFWwindow*>(this->_underlying));
+   return glfwWindowShouldClose(this->_underlying->glfwWindow);
 }
 
 void Window::SetShouldClose(bool value) {
-   glfwSetWindowShouldClose(static_cast<GLFWwindow*>(this->_underlying), value);
+   glfwSetWindowShouldClose(this->_underlying->glfwWindow, value);
 }
 
 void Window::SetVisible(bool value) {
    if (value)
-      glfwShowWindow(static_cast<GLFWwindow*>(this->_underlying));
+      glfwShowWindow(this->_underlying->glfwWindow);
    else
-      glfwHideWindow(static_cast<GLFWwindow*>(this->_underlying));
+      glfwHideWindow(this->_underlying->glfwWindow);
 }
 
 void Window::MakeCurrent() {
-   glfwMakeContextCurrent(static_cast<GLFWwindow*>(this->_underlying));
+   glfwMakeContextCurrent(this->_underlying->glfwWindow);
 }
 
 void Window::SetTargetFPS(int fps) {
@@ -90,14 +118,16 @@ void Window::BeginFrame() {
    _frame_current = GetElapsedTime();
    _update = _frame_current - _frame_prev;
    _frame_prev = _frame_current;
+
+   api_prepareFrame_window(global_ctx, this->_underlying->mzrWindow);
 }
 
 void Window::EndFrame() {
    for (std::size_t i = 0; i < _key_prev_states.size(); ++i) {
-      _key_prev_states[i] = glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), key_to_glfwKey(static_cast<Key>(i)));
+      _key_prev_states[i] = glfwGetKey(this->_underlying->glfwWindow, key_to_glfwKey(static_cast<Key>(i)));
    }
    for (std::size_t i = 0; i < _mouse_prev_states.size(); ++i) {
-      _mouse_prev_states[i] = glfwGetMouseButton(static_cast<GLFWwindow*>(this->_underlying), i);
+      _mouse_prev_states[i] = glfwGetMouseButton(this->_underlying->glfwWindow, i);
    }
 
    _frame_current = GetElapsedTime();
@@ -134,7 +164,7 @@ void Window::SetCallback<Event::CURSOR>(Callback_t<Event::CURSOR> callback) {
 
 float2 Window::GetMousePos() {
    double x, y;
-   glfwGetCursorPos(static_cast<GLFWwindow*>(this->_underlying), &x, &y);
+   glfwGetCursorPos(this->_underlying->glfwWindow, &x, &y);
    return float2{static_cast<float>(x), static_cast<float>(y)};
 }
 
@@ -142,37 +172,37 @@ float2 Window::GetMousePos() {
 // Input functions
 
 bool Window::IsMouseDown(MouseButton button) {
-   return GLFW_PRESS == glfwGetMouseButton(static_cast<GLFWwindow*>(this->_underlying), msButton_to_glfwButton(button));
+   return GLFW_PRESS == glfwGetMouseButton(this->_underlying->glfwWindow, msButton_to_glfwButton(button));
 }
 
 bool Window::IsMousePressed(MouseButton button) {
    int glfw_button = msButton_to_glfwButton(button);
-   int current_state = glfwGetMouseButton(static_cast<GLFWwindow*>(this->_underlying), glfw_button);
+   int current_state = glfwGetMouseButton(this->_underlying->glfwWindow, glfw_button);
 
    return _mouse_prev_states[glfw_button] == GLFW_RELEASE && current_state == GLFW_PRESS;
 }
 
 bool Window::IsMouseReleased(MouseButton button) {
    int glfw_button = msButton_to_glfwButton(button);
-   int current_state = glfwGetMouseButton(static_cast<GLFWwindow*>(this->_underlying), glfw_button);
+   int current_state = glfwGetMouseButton(this->_underlying->glfwWindow, glfw_button);
 
    return _mouse_prev_states[glfw_button] == GLFW_PRESS && current_state == GLFW_RELEASE;
 }
 
 bool Window::IsKeyDown(Key key) {
-   return GLFW_PRESS == glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), key_to_glfwKey(key));
+   return GLFW_PRESS == glfwGetKey(this->_underlying->glfwWindow, key_to_glfwKey(key));
 }
 
 bool Window::IsKeyPressed(Key key) {
    int glfw_key = key_to_glfwKey(key);
-   int current_state = glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), glfw_key);
+   int current_state = glfwGetKey(this->_underlying->glfwWindow, glfw_key);
 
    return _key_prev_states[key] == GLFW_RELEASE && current_state == GLFW_PRESS;
 }
 
 bool Window::IsKeyReleased(Key key) {
    int glfw_key = key_to_glfwKey(key);
-   int current_state = glfwGetKey(static_cast<GLFWwindow*>(this->_underlying), glfw_key);
+   int current_state = glfwGetKey(this->_underlying->glfwWindow, glfw_key);
 
    return _key_prev_states[key] == GLFW_PRESS && current_state == GLFW_RELEASE;
 }
@@ -181,12 +211,15 @@ bool Window::IsKeyReleased(Key key) {
 // Draw lifecycle
 
 void Window::BeginDrawing() {
-   glfwMakeContextCurrent(static_cast<GLFWwindow*>(this->_underlying));
+   glfwMakeContextCurrent(this->_underlying->glfwWindow);  
+   float mat[16];
+   createOrthographic(mat, 0, size.x, size.y, 0, -1, 1);
+   api_set_projection(global_ctx, mat);
    this->_draw_last_marked = GetElapsedTime();
 }
 
 void Window::EndDrawing() {
-   glfwSwapBuffers(static_cast<GLFWwindow*>(this->_underlying));
+   glfwSwapBuffers(this->_underlying->glfwWindow);
    this->_draw_time = GetElapsedTime() - this->_draw_last_marked;
 }
 
@@ -205,6 +238,7 @@ void Window::Clear(Color color) {
 // * make batch drawing work with the abstract Shape class
 // * find some other way to batch vertices rather than relying on vector
 void Window::BatchDraw(Triangle* triangles, std::size_t n, Color color) {
+   /*
    std::size_t count = 0;
    std::vector<float> geometry;
 
@@ -221,11 +255,11 @@ void Window::BatchDraw(Triangle* triangles, std::size_t n, Color color) {
 
    submit_immediate_call(GL_TRIANGLES, geometry.data(), buffer_byte_size(float, count), count);
    update_vertex_attrib();
-   draw();
+   draw();*/
 }
 
 void Window::BatchDraw(Rectangle* rectangles, std::size_t n, Color color) {
-   std::size_t count = 0;
+   /*std::size_t count = 0;
    std::vector<float> geometry;
 
    for (std::size_t i = 0; i < n; ++i) {
@@ -241,11 +275,10 @@ void Window::BatchDraw(Rectangle* rectangles, std::size_t n, Color color) {
 
    submit_immediate_call(GL_TRIANGLES, geometry.data(), buffer_byte_size(float, count), count);
    update_vertex_attrib();
-   draw();
+   draw();*/
 }
 
 void Window::BatchDraw(Circle* circles, std::size_t n, Color color) {}
-
 
 // Static draw functions
 
@@ -254,70 +287,59 @@ void Window::BatchDraw(Circle* circles, std::size_t n, Color color) {}
 // * this isn't elegant or performant enough
 template<>
 void Window::Draw<Triangle>(StaticDrawable<Triangle>& triangle) {
-   if (_static_vbos.find(triangle._id) != _static_vbos.end()) {
-      draw_static(GL_TRIANGLES, _static_vbos[triangle._id], 3);
-   }
-   else {
-      alloc_shape_buffer(float, vertices, 3);
-      triangle._shape.GenerateVertices(vertices, this->size, triangle._color);
-
-      GLuint vbo;
-      glGenBuffers(1, &vbo);
-      glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      glBufferData(GL_ARRAY_BUFFER, buffer_byte_size(float, 3), vertices, GL_STATIC_DRAW);
-
-      _static_vbos[triangle._id] = vbo;
-      draw_static(GL_TRIANGLES, vbo, 3);
-   }
 }
 template<>
 void Window::Draw<Rectangle>(StaticDrawable<Rectangle>& rectangle) {
-   if (_static_vbos.find(rectangle._id) != _static_vbos.end()) {
-      draw_static(GL_TRIANGLES, _static_vbos[rectangle._id], 6);
-   }
-   else {
-      alloc_shape_buffer(float, vertices, 6);
-      rectangle._shape.GenerateVertices(vertices, this->size, rectangle._color);
-
-      GLuint vbo;
-      glGenBuffers(1, &vbo);
-      glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      glBufferData(GL_ARRAY_BUFFER, buffer_byte_size(float, 6), vertices, GL_STATIC_DRAW);
-
-      _static_vbos[rectangle._id] = vbo;
-      draw_static(GL_TRIANGLES, vbo, 6);
-   }
 }
 template<>
 void Window::Draw<Circle>(StaticDrawable<Circle>&) {}
 
-
 // Regular draw functions
+void Window::Draw() {}
 
-void Window::Draw(Triangle triangle, Color color) {
-   alloc_shape_buffer(float, vertices, 3);
-   triangle.GenerateVertices(vertices, this->size, color);
-   submit_immediate_call(GL_TRIANGLES, vertices, buffer_byte_size(float, 3), 3);
-   update_vertex_attrib();
-   draw();
-}
+/*
+void Window::DrawText(Font font, const char* text, float size, float x, float y, Color color) {
+   _current_shader->uploadUniform3f("textColor", color.r, color.g, color.b);
+   if (font.isFaceLoaded(size) && !font.isFaceCurrent(size)) {
+      font.makeFaceCurrent(size);
+   }
+   else {
+      font.loadFace(size);
+      font.makeFaceCurrent(size);
+   }
 
-void Window::Draw(Rectangle rectangle, Color color) {
-   alloc_shape_buffer(float, vertices, 6);
-   rectangle.GenerateVertices(vertices, this->size, color);
-   submit_immediate_call(GL_TRIANGLES, vertices, buffer_byte_size(float, 6), 6);
-   update_vertex_attrib();
-   draw();
-}
+   glActiveTexture(GL_TEXTURE0);
 
-void Window::Draw(Circle circle, Color color) {
-   //TODO: work this out
-   float2 adjusted_pos = project_point_to_screen(circle.pos, this->size);
-   float adjusted_size = circle.radius;
+   while (*text != '\0') {
+      float2 bearing = font.getBearing(*text);
+      float2 size = font.getSize(*text);
+      float xpos = x + bearing.x;
+      float ypos = y + (size.y - bearing.y);
+
+      float w = size.x;
+      float h = size.y;
+
+      // update VBO for each character
+      float vertices[6*4] = {
+         xpos,     ypos - h,   0.0f, 0.0f ,
+         xpos,     ypos,       0.0f, 1.0f,
+         xpos + w, ypos,       1.0f, 1.0f,
+
+         xpos,     ypos - h,   0.0f, 0.0f,
+         xpos + w, ypos,       1.0f, 1.0f,
+         xpos + w, ypos - h,   1.0f, 0.0f
+      };
+
+      font.bindTexture(*text);
+      //submit_immediate_call(GL_TRIANGLES, vertices, sizeof(vertices), 6);
+
+      x += (font.getAdvance(*text) >> 6);
+      ++text;
+   }
 }
+*/
 
 void Window::FlushRender() {
-   flush();
 }
 
 }

@@ -1,1 +1,2 @@
 option(BUILD_TESTS "Build tests for Mozzarella" OFF)
+set(BACKEND "OPENGL" CACHE STRING "Decides what backend to use when building Mozzarella")

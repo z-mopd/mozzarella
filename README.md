@@ -3,7 +3,7 @@ Also abbreviated as mzr, Mozzarella is a work-in-progress, (somewhat) self-conta
 
 Retained-mode rendering is planned.
 
-## Building
+## Compiling
 #### Disclaimer!
 - Mozzarella has only been tested on Linux Ubuntu (X11), so there are no guarantees for Wayland or other distros. Though they should hopefully work.
 
@@ -15,6 +15,24 @@ cmake ..
 cmake --build .
 ```
 
-#### Tests
-- -DBUILD_TESTS
-  - Build tests/examples for mzr
+## Options
+#### BUILD_TESTS
+
+Build tests/examples for mzr
+- Default: OFF
+- Usage:
+```bash
+cmake -DBUILD_TESTS=ON ..
+```
+
+#### BACKEND
+
+Specifies what backend is used when Mozzarella is compiled
+- Available Values:
+  - OPENGL
+  - VULKAN
+- Default: OPENGL
+- Usage:
+```bash
+cmake -DBACKEND=VULKAN ..
+```

@@ -26,6 +26,5 @@ int main() {
    }
 
    myWindow.Close();
-
    mzr::Close();
 }

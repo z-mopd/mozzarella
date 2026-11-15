@@ -1,78 +1,99 @@
 #include "shape.hpp"
-#include "_vertex.hpp"
+#include "_common.hpp"
+
+#include "color.hpp"
+#include "platform/api.h"
 #include <cmath>
 
 namespace mzr {
 
-
 // Triangle
-
 Triangle::Triangle() : p1({0, 0}), p2({0, 0}), p3({0, 0}) {}
 Triangle::Triangle(float2 p1, float2 p2, float2 p3) : p1(p1), p2(p2), p3(p3) {}
 
-std::size_t Triangle::_count() const {return 3;}
-
-void Triangle::GenerateVertices(float* vertex_buffer, int2 winsize, Color color) const {
-   float2 adjusted_p1 = project_point_to_screen(this->p1, winsize);
-   float2 adjusted_p2 = project_point_to_screen(this->p2, winsize);
-   float2 adjusted_p3 = project_point_to_screen(this->p3, winsize);
-
-   gen_triangle_direct(vertex_buffer, 7, adjusted_p1, adjusted_p2, adjusted_p3);
-   map_color_ntimes(vertex_buffer, buffer_nsize(3), 3, color.normalized(), 3);
-}
-
-bool Triangle::CheckCollisionPoint(float2 point) const {
-    double areaOrig = fabs((this->p2.x - this->p1.x) * (this->p3.y - this->p1.y) - (this->p3.x - this->p1.x) * (this->p2.y - this->p1.y));
-    double area1 = fabs((this->p1.x - point.x) * (this->p2.y - point.y) - (this->p2.x - point.x) * (this->p1.y - point.y));
-    double area2 = fabs((this->p2.x - point.x) * (this->p3.y - point.y) - (this->p3.x - point.x) * (this->p2.y - point.y));
-    double area3 = fabs((this->p3.x - point.x) * (this->p1.y - point.y) - (this->p1.x - point.x) * (this->p3.y - point.y));
+bool Triangle::CheckCollisionPoint(const Triangle& obj, float2 point) {
+    double areaOrig = fabs((obj.p2.x - obj.p1.x) * (obj.p3.y - obj.p1.y) - (obj.p3.x - obj.p1.x) * (obj.p2.y - obj.p1.y));
+    double area1 = fabs((obj.p1.x - point.x) * (obj.p2.y - point.y) - (obj.p2.x - point.x) * (obj.p1.y - point.y));
+    double area2 = fabs((obj.p2.x - point.x) * (obj.p3.y - point.y) - (obj.p3.x - point.x) * (obj.p2.y - point.y));
+    double area3 = fabs((obj.p3.x - point.x) * (obj.p1.y - point.y) - (obj.p1.x - point.x) * (obj.p3.y - point.y));
     return fabs(area1 + area2 + area3 - areaOrig) < 1e-6;
 }
 
+bool Triangle::CheckCollision(const Triangle& obj, const Triangle& other) {
+   return true;
+}
+
+void Triangle::immediateDraw(const Triangle& obj, Color color) {
+   Color normal = color.normalized();
+   api_set_color(global_ctx, normal.r, normal.g, normal.b, normal.a);
+   api_draw_triangle(global_ctx,
+      obj.p1.x, obj.p1.y,
+      obj.p2.x, obj.p2.y,
+      obj.p3.x, obj.p3.y
+   );
+}
 
 // Rectangle
-
 Rectangle::Rectangle() : pos({0, 0}), size({0, 0}) {}
 Rectangle::Rectangle(float2 pos, float2 size) : pos(pos), size(size) {}
 Rectangle::Rectangle(float x, float y, float width, float height) : pos{x, y}, size{width, height} {}
 
-std::size_t Rectangle::_count() const {return 6;}
+bool Rectangle::CheckCollisionPoint(const Rectangle& obj, float2 point) {
+   float min_x = obj.pos.x;
+   float min_y = obj.pos.y;
 
-void Rectangle::GenerateVertices(float* vertex_buffer, int2 winsize, Color color) const {
-   float2 adjusted_pos = project_point_to_screen(pos, winsize);
-   float2 adjusted_size = project_size_to_screen(size, winsize);
-
-   gen_rectangle_vert(vertex_buffer, 7, adjusted_pos, adjusted_size);
-   map_color_ntimes(vertex_buffer, buffer_nsize(6), 6, color.normalized(), 3);
-}
-
-bool Rectangle::CheckCollisionPoint(float2 point) const {
-   float min_x = this->pos.x;
-   float min_y = this->pos.y;
-
-   float max_x = this->pos.x + this->size.x;
-   float max_y = this->pos.y + this->size.y;
+   float max_x = obj.pos.x + obj.size.x;
+   float max_y = obj.pos.y + obj.size.y;
 
    return (min_x <= point.x && point.x <= max_x && min_y <= point.y && point.y <= max_y);
 }
 
+bool Rectangle::CheckCollision(const Rectangle& obj, const Rectangle& other) {
+   return (
+      obj.pos.x < other.pos.x + other.size.x &&
+      obj.pos.x + obj.size.x  > other.pos.x  &&
+      obj.pos.y < other.pos.y + other.size.y &&
+      obj.pos.y + obj.size.y  > other.pos.y
+   );
+}
+
+bool Rectangle::CheckCollision(const Rectangle& obj, const Triangle& other) {
+   return true;
+}
+
+void Rectangle::immediateDraw(const Rectangle& obj, Color color) {
+   Color normal = color.normalized();
+   api_set_color(global_ctx, normal.r, normal.g, normal.b, normal.a);
+   api_draw_rectangle(global_ctx, obj.pos.x, obj.pos.y, obj.size.x, obj.size.y);
+}
 
 // Circle
+Circle::Circle() : pos({0, 0}), radius(0) {}
+Circle::Circle(float2 pos, float radius) : pos(pos), radius(radius) {}
 
-Circle::Circle() : pos({0, 0}), radius(0), SEGMENTS(CIRCLE_DEFAULT_SEGMENTS) {}
-Circle::Circle(float2 pos, float radius) : pos(pos), radius(radius), SEGMENTS(CIRCLE_DEFAULT_SEGMENTS) {}
-Circle::Circle(float2 pos, float radius, std::size_t segments) : pos(pos), radius(radius), SEGMENTS(segments) {}
+bool Circle::CheckCollisionPoint(const Circle& obj, float2 point) {
+   float dx = point.x - obj.pos.x;
+   float dy = point.y - obj.pos.y;
+   float distance_sq = dx * dx + dy * dy; return ( (distance_sq < obj.radius) | (fabs(distance_sq - obj.radius) < 1e-9) );
+}
 
-std::size_t Circle::_count() const {return 0;}
+bool Circle::CheckCollision(const Circle& obj, const Circle& other) {
+   return true;
+}
 
-void Circle::GenerateVertices(float* vertex_buffer, int2 winsize, Color color) const {}
+bool Circle::CheckCollision(const Circle& obj, const Triangle& other) {
+   return true;
+}
 
-bool Circle::CheckCollisionPoint(float2 point) const {
-   float dx = point.x - this->pos.x;
-   float dy = point.y - this->pos.y;
-   float distance_sq = dx * dx + dy * dy;
+bool Circle::CheckCollision(const Circle& obj, const Rectangle& other) {
+   return true;
+}
 
-   return ( (distance_sq < this->radius) | (fabs(distance_sq - this->radius) < 1e-9) );
+void Circle::immediateDraw(const Circle& obj, Color color) {
+   Color normal = color.normalized();
+   api_set_color(global_ctx, normal.r, normal.g, normal.b, normal.a);
+   float data[obj.vertexCount()*3];
+   api_draw_circle(global_ctx, data, obj.pos.x, obj.pos.y, obj.radius, obj.vertexCount());
 }
 
 }

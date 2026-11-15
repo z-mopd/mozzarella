@@ -8,7 +8,6 @@
 #include "mzr/event.hpp"
 #include "mzr/core.hpp"
 #include "mzr/input.hpp"
-#include "mzr/shader.hpp"
 #include "mzr/shape.hpp"
 #include "mzr/window.hpp"
 
