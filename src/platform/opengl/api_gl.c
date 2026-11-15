@@ -150,6 +150,19 @@ GLFWwindow* getGlfw(MzrWindow window) {
    return window->underlying;
 }
 
+MzrBuffer mzrgl_alloc_buffer(size_t size, GLenum usage) {
+   MzrBuffer buffer = (MzrBuffer)malloc(sizeof(struct __mzr_buffer));
+   buffer->size = size;
+
+   glGenBuffers(1, &(buffer->vbo));
+
+   glBindBuffer(GL_ARRAY_BUFFER, buffer->vbo);
+   glBufferData(GL_ARRAY_BUFFER, size, NULL, usage);
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+   return buffer;
+}
+
 MzrBuffer api_alloc_dynamic_buffer(
    MzrApiCtx ctx,
    size_t vertECount,
@@ -157,27 +170,15 @@ MzrBuffer api_alloc_dynamic_buffer(
    size_t vertStride,
    size_t vertCount
 ) {
-   MzrBuffer buffer = (MzrBuffer)malloc(sizeof(struct __mzr_buffer));
-   size_t bSize = vertECount*vertESize*vertCount;
-   GLuint vbo;
-   glGenBuffers(1, &vbo);
-   buffer->vbo = vbo;
-   buffer->size = bSize;
-
-   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-   glBufferData(GL_ARRAY_BUFFER, bSize, NULL, GL_DYNAMIC_DRAW);
-   glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-   return buffer;
+   return mzrgl_alloc_buffer(vertECount*vertESize*vertCount, GL_DYNAMIC_DRAW);
 }
 
 MzrBuffer api_alloc_static_buffer(
    MzrApiCtx ctx,
-   size_t vertAttribElementCount,
-   size_t vertAttribElementSize,
-   size_t vertAttribStride,
-   size_t vertAttribCount
+   size_t vertECount,
+   size_t vertESize,
+   size_t vertStride,
+   size_t vertCount
 ) {
-   MzrBuffer buffer = (MzrBuffer)malloc(sizeof(struct __mzr_buffer));
-   return buffer;
+   return mzrgl_alloc_buffer(vertECount*vertESize*vertCount, GL_STATIC_DRAW);
 }

@@ -2,6 +2,7 @@
 #include <math.h>
 
 #define TRIANGLE_BUFFER_SIZE (9)
+#define LINE_BUFFER_SIZE (6)
 
 void api_set_projection(MzrApiCtx ctx, float* mat4x4) {
    glUniformMatrix4fv(glGetUniformLocation(ctx->current_program, "projection"), 1, GL_FALSE, mat4x4);
@@ -37,7 +38,7 @@ size_t api_write_triangle(
    float x2, float y2,
    float x3, float y3
 ) {
-   if (buffer->size + byteOffset + TRIANGLE_BUFFER_SIZE > buffer->size) {
+   if (byteOffset + TRIANGLE_BUFFER_SIZE > buffer->size) {
       return 0;
    }
 
@@ -48,7 +49,7 @@ size_t api_write_triangle(
    };
 
    glBindBuffer(GL_ARRAY_BUFFER, buffer->vbo);
-   glBufferSubData(GL_ARRAY_BUFFER, byteOffset, TRIANGLE_BUFFER_SIZE, arr);
+   glBufferSubData(GL_ARRAY_BUFFER, byteOffset, sizeof(arr), arr);
 
    return TRIANGLE_BUFFER_SIZE;
 }
@@ -94,4 +95,39 @@ void api_draw_circle(MzrApiCtx ctx, float* vertex_buffer, float xpos, float ypos
    glBufferSubData(GL_ARRAY_BUFFER, 0, segments*3*sizeof(float), vertex_buffer);
 
    glDrawArrays(GL_TRIANGLE_FAN, 0, segments);
+}
+
+void api_draw_line(
+   MzrApiCtx ctx,
+   float x1, float y1,
+   float x2, float y2
+) {
+   float arr[LINE_BUFFER_SIZE] = {
+      x1, y1, 0,
+      x2, y2, 0
+   };
+
+   glBindBuffer(GL_ARRAY_BUFFER, ctx->immediate_vbo);
+   glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(arr), arr);
+   glDrawArrays(GL_LINES, 0, 2);
+}
+
+// write_line
+// Writes the vertex data of a line to a buffer for later use
+// returns size_t: how many bytes written
+size_t api_write_line(
+   MzrApiCtx ctx,
+   MzrBuffer buffer,
+   float x1, float y1,
+   float x2, float y2
+) {
+   float arr[LINE_BUFFER_SIZE] = {
+      x1, y1, 0,
+      x2, y2, 0,
+   };
+
+   glBindBuffer(GL_ARRAY_BUFFER, buffer->vbo);
+   glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(arr), arr);
+
+   return LINE_BUFFER_SIZE;
 }
