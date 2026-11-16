@@ -4,13 +4,15 @@
 namespace mzr {
 
 bool Init();
+void Close();
+
+bool IsInitialized();
+bool IsClosed();
 
 double GetElapsedTime();
 double GetCurrentTime();
 
 void SleepTime(double seconds);
-
-void Close();
 
 }
 
