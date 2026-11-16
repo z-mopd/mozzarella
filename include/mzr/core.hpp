@@ -3,11 +3,11 @@
 
 namespace mzr {
 
-bool Init();
-void Close();
-
 bool IsInitialized();
 bool IsClosed();
+
+bool Init();
+void Close();
 
 double GetElapsedTime();
 double GetCurrentTime();

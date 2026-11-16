@@ -12,25 +12,26 @@ double init_time;
 
 namespace mzr {
 
-bool Init() {
-   if (global_ctx != nullptr)
-      return true;
-
-   global_ctx = api_ctx();
-   return api_init(global_ctx, &init_time);
-}
-
-void Close() {
-   api_done(global_ctx);
-   global_ctx = nullptr;
-}
-
 bool IsInitialized() {
    return global_ctx != nullptr;
 }
 
 bool IsClosed() {
    return !IsInitialized();
+}
+
+bool Init() {
+   if (IsInitialized()) return true;
+
+   global_ctx = api_ctx();
+   return api_init(global_ctx, &init_time);
+}
+
+void Close() {
+   if (IsClosed()) return;
+
+   api_done(global_ctx);
+   global_ctx = nullptr;
 }
 
 double GetElapsedTime() {
