@@ -85,31 +85,6 @@ int api_done(MzrApiCtx ctx) {
    return AGNOSTIC_SUCCESS;
 }
 
-MzrShader api_shaderNull(MzrApiCtx ctx) {
-   MzrShader nullShader = malloc(sizeof(struct __mzr_shader));
-   nullShader->program = 0;
-   return nullShader;
-}
-
-MzrShader api_shader2d(MzrApiCtx ctx) {
-   return &ctx->shader2d;
-}
-
-MzrShader api_shaderText(MzrApiCtx ctx) {
-   return &ctx->shaderText;
-}
-
-int api_bind_shader(MzrApiCtx ctx, MzrShader shader) {
-   glUseProgram(shader->program);
-   ctx->current_program = shader->program;
-
-   return AGNOSTIC_SUCCESS;
-}
-
-int api_is_shader_bound(MzrApiCtx ctx, MzrShader shader) {
-   return ctx->current_program == shader->program;
-}
-
 MzrWindow api_create_window(
    MzrApiCtx ctx,
    const char* title,
@@ -148,6 +123,35 @@ void api_prepareFrame_window(MzrApiCtx ctx, MzrWindow window) {
 
 GLFWwindow* getGlfw(MzrWindow window) {
    return window->underlying;
+}
+
+MzrShader api_shaderNull(MzrApiCtx ctx) {
+   MzrShader nullShader = malloc(sizeof(struct __mzr_shader));
+   nullShader->program = 0;
+   return nullShader;
+}
+
+MzrShader api_shader2d(MzrApiCtx ctx) {
+   return &ctx->shader2d;
+}
+
+MzrShader api_shaderText(MzrApiCtx ctx) {
+   return &ctx->shaderText;
+}
+
+int api_bind_shader(MzrApiCtx ctx, MzrShader shader) {
+   glUseProgram(shader->program);
+   ctx->current_program = shader->program;
+
+   return AGNOSTIC_SUCCESS;
+}
+
+int api_is_shader_bound(MzrApiCtx ctx, MzrShader shader) {
+   return ctx->current_program == shader->program;
+}
+
+MzrTexture api_texture(TextureType type) {
+
 }
 
 MzrBuffer mzrgl_alloc_buffer(size_t size, GLenum usage) {

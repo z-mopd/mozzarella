@@ -48,9 +48,26 @@ typedef struct __mzr_buffer* MzrBuffer;
 struct __mzr_shader;
 typedef struct __mzr_shader* MzrShader;
 
+struct __mzr_texture;
+typedef struct __mzr_texture* MzrTexture;
+
+typedef enum {
+   Texture1D,
+   Texture2D,
+   Texture3D
+} TextureType;
+
 MzrApiCtx api_ctx(void); // allocates memory on the heap
 int api_init(MzrApiCtx ctx, double* initTime);
 int api_done(MzrApiCtx ctx); // frees memory
+
+// Creates a window with the specified position and size
+MzrWindow api_create_window(MzrApiCtx ctx, const char* title, size_t x, size_t y, size_t width, size_t height);
+void api_done_window(MzrApiCtx ctx, MzrWindow window);
+
+void api_prepareFrame_window(MzrApiCtx ctx, MzrWindow window);
+
+GLFWwindow* getGlfw(MzrWindow window);
 
 MzrShader api_shaderNull(MzrApiCtx ctx);
 MzrShader api_shader2d(MzrApiCtx ctx);
@@ -60,13 +77,7 @@ MzrShader api_shaderText(MzrApiCtx ctx);
 int api_bind_shader(MzrApiCtx ctx, MzrShader shader);
 int api_is_shader_bound(MzrApiCtx ctx, MzrShader shader);
 
-// Creates a window with the specified position and size
-MzrWindow api_create_window(MzrApiCtx ctx, const char* title, size_t x, size_t y, size_t width, size_t height);
-void api_done_window(MzrApiCtx ctx, MzrWindow window);
-
-void api_prepareFrame_window(MzrApiCtx ctx, MzrWindow window);
-
-GLFWwindow* getGlfw(MzrWindow window);
+MzrTexture api_texture(TextureType type);
 
 // Note, in the future, something similar to Vulkan & OpenGL UBOs (Uniform Buffer Object) should be implemented to replace this approach
 void api_set_projection(MzrApiCtx ctx, float* mat4x4);
