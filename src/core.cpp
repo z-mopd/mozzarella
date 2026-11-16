@@ -20,6 +20,19 @@ bool Init() {
    return api_init(global_ctx, &init_time);
 }
 
+void Close() {
+   api_done(global_ctx);
+   global_ctx = nullptr;
+}
+
+bool IsInitialized() {
+   return global_ctx != nullptr;
+}
+
+bool IsClosed() {
+   return !IsInitialized();
+}
+
 double GetElapsedTime() {
    return glfwGetTime();
 }
@@ -38,11 +51,6 @@ void SleepTime(double seconds) {
 
 void ProcessEvents() {
    glfwPollEvents();
-}
-
-void Close() {
-   api_done(global_ctx);
-   global_ctx = nullptr;
 }
 
 }
