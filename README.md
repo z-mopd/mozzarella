@@ -18,11 +18,20 @@ cmake --build .
 ## Options
 #### BUILD_TESTS
 
-Build tests/examples for mzr
+Build tests/examples for Mozzarella
 - Default: OFF
 - Usage:
 ```bash
 cmake -DBUILD_TESTS=ON ..
+```
+
+#### COMPILE_COMMANDS
+
+Export compile commands for Mozzarella
+- Default: OFF
+- Usage:
+```bash
+cmake -DCOMPILE_COMMANDS=ON ..
 ```
 
 #### BACKEND

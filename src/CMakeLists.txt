@@ -36,7 +36,6 @@ add_library(mzrlib
 target_link_libraries(mzrlib PRIVATE OpenGL::GL)
 target_include_directories(mzrlib 
    PRIVATE
-   ${CMAKE_CURRENT_BINARY_DIR}
    ${CMAKE_CURRENT_SOURCE_DIR}/platform
    ${mzrinclude}
 
