@@ -9,7 +9,7 @@ Retained-mode rendering is planned.
 
 #### Using CMake
 Building Mozzarella is straightforward and follows the regular CMake process.
-```bash
+```sh
 mkdir build && cd build
 cmake ..
 cmake --build .
@@ -21,7 +21,7 @@ cmake --build .
 Build tests/examples for Mozzarella
 - Default: OFF
 - Usage:
-```bash
+```sh
 cmake -DBUILD_TESTS=ON ..
 ```
 
@@ -30,7 +30,7 @@ cmake -DBUILD_TESTS=ON ..
 Export compile commands for Mozzarella
 - Default: OFF
 - Usage:
-```bash
+```sh
 cmake -DCOMPILE_COMMANDS=ON ..
 ```
 
@@ -42,6 +42,6 @@ Specifies what backend is used when Mozzarella is compiled
   - VULKAN
 - Default: OPENGL
 - Usage:
-```bash
+```sh
 cmake -DBACKEND=VULKAN ..
 ```
